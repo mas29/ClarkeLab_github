@@ -19,7 +19,12 @@ myPlot = qplot(as.numeric(rownames(sytoxG_plate1)), as.numeric(Clofarabine), dat
 myPlot + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
 
 #smaller dataset
-sm_dataset <- sytoxG_plate1
+sm_dataset <- sytoxG_plate1[,1:2]
+
+p1 <- 
+  ggplot(ChickWeight, aes(x=Time, y=weight, colour=Diet, group=Chick)) +
+  geom_line() +
+  ggtitle("Growth curve for individual chicks")
 
 ggplot(sytoxG_plate1, aes(date)) + 
   geom_line(aes(y = var0, colour = "var0")) + 
