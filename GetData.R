@@ -22,6 +22,9 @@ plate2_raw_data_file_sytoxG_sheetName <- "Sytox G"
 plate3_raw_data_file_sytoxG_sheetName <- "Sheet2"
 plate4_raw_data_file_sytoxG_sheetName <- "Sytox G +ve"
 plate5_raw_data_file_sytoxG_sheetName <- "Sytox G +ve"
+confluency_allPlates_df_file_save_location <- paste(dir,"DataObjects/confluency_allPlates.R",sep="")
+sytoxG_allPlates_df_file_save_location <-  paste(dir,"DataObjects/sytoxG_allPlates.R",sep="")
+selleck_bioactive_compound_lib_df_file_save_location <- paste(dir,"DataObjects/selleck_bioactive_compound_lib.R",sep="")
 
 #get compound list for each plate
 compoundFile_plate1 <- read.xlsx(compound_key_filename, sheetIndex=1)
@@ -113,32 +116,32 @@ names(sytoxG_plate3) <- ifelse(names(sytoxG_plate3) %in% "Empty", str_c(names(sy
 names(sytoxG_plate4) <- ifelse(names(sytoxG_plate4) %in% "Empty", str_c(names(sytoxG_plate4), '.4'), names(sytoxG_plate4))
 names(sytoxG_plate5) <- ifelse(names(sytoxG_plate5) %in% "Empty", str_c(names(sytoxG_plate5), '.5'), names(sytoxG_plate5))
 
-#merge all plates (no compound is repeated)
+#merge all plates (no compound is repeated), transpose so that rows are compounds, columns are time elapsed
 
-sytoxG_allPlates <- cbind(confluency_plate1,confluency_plate2[,2:ncol(confluency_plate2)],confluency_plate3[,2:ncol(confluency_plate3)],
-                          confluency_plate4[,2:ncol(confluency_plate4)],confluency_plate5[,2:ncol(confluency_plate5)])
+temp <- rownames()
 
+confluency_allPlates <- t(cbind(time_elapsed_df,confluency_plate1[-1],confluency_plate2[-1],confluency_plate3[-1],confluency_plate4[-1],confluency_plate5[-1],make.row.names=TRUE))
+sytoxG_allPlates <- t(cbind(time_elapsed_df,sytoxG_plate1[-1],sytoxG_plate2[-1],sytoxG_plate3[-1],sytoxG_plate4[-1],sytoxG_plate5[-1],make.row.names=TRUE))
 
-#reformat to one compound per row?
+#set column names as "sytoxG_t0", "sytoxG_t2", etc.
+
+colnames(confluency_allPlates) <- paste("confluency_t", confluency_allPlates[1,], sep = "")
+colnames(sytoxG_allPlates) <- paste("sytoxG_t", sytoxG_allPlates[1,], sep = "")
+
+#merge two datasets, confluency & sytoxG, rename first column to "compound" instead of "row.names"
+
+confluency_sytoxG_allPlates <- merge(confluency_allPlates,sytoxG_allPlates, by="row.names", all.x=TRUE, all.y=TRUE)
+colnames(confluency_sytoxG_allPlates) <- c("compound",colnames(confluency_sytoxG_allPlates)[-1])
 
 #merge selleck data
 
+confluency_sytoxG_allPlates_w_selleck_info <- merge(confluency_sytoxG_allPlates, selleck_bioactive_compound_lib, all.x=TRUE, by.x="compound", by.y="Product.Name")
 
 #save
 
-save(confluency_plate1, file = paste(dir,"DataObjects/confluency_plate1.R",sep=""))
-save(confluency_plate2, file = paste(dir,"DataObjects/confluency_plate2.R",sep=""))
-save(confluency_plate3, file = paste(dir,"DataObjects/confluency_plate3.R",sep=""))
-save(confluency_plate4, file = paste(dir,"DataObjects/confluency_plate4.R",sep=""))
-save(confluency_plate5, file = paste(dir,"DataObjects/confluency_plate5.R",sep=""))
-
-save(sytoxG_plate1, file = paste(dir,"DataObjects/sytoxG_plate1.R",sep=""))
-save(sytoxG_plate2, file = paste(dir,"DataObjects/sytoxG_plate2.R",sep=""))
-save(sytoxG_plate3, file = paste(dir,"DataObjects/sytoxG_plate3.R",sep=""))
-save(sytoxG_plate4, file = paste(dir,"DataObjects/sytoxG_plate4.R",sep=""))
-save(sytoxG_plate5, file = paste(dir,"DataObjects/sytoxG_plate5.R",sep=""))
-
-save(selleck_bioactive_compound_lib, file = paste(dir,"DataObjects/selleck_bioactive_compound_lib.R",sep=""))
+save(confluency_allPlates, file = confluency_allPlates_df_file_save_location)
+save(sytoxG_allPlates, file = sytoxG_allPlates_df_file_save_location)
+save(selleck_bioactive_compound_lib, file = selleck_bioactive_compound_lib_df_file_save_location)
 
 
 #trash code
@@ -167,3 +170,15 @@ save(selleck_bioactive_compound_lib, file = paste(dir,"DataObjects/selleck_bioac
 # rownames(sytoxG_plate3) <- time_elapsed
 # rownames(sytoxG_plate4) <- time_elapsed
 # rownames(sytoxG_plate5) <- time_elapsed
+
+# save(confluency_plate1, file = paste(dir,"DataObjects/confluency_plate1.R",sep=""))
+# save(confluency_plate2, file = paste(dir,"DataObjects/confluency_plate2.R",sep=""))
+# save(confluency_plate3, file = paste(dir,"DataObjects/confluency_plate3.R",sep=""))
+# save(confluency_plate4, file = paste(dir,"DataObjects/confluency_plate4.R",sep=""))
+# save(confluency_plate5, file = paste(dir,"DataObjects/confluency_plate5.R",sep=""))
+# 
+# save(sytoxG_plate1, file = paste(dir,"DataObjects/sytoxG_plate1.R",sep=""))
+# save(sytoxG_plate2, file = paste(dir,"DataObjects/sytoxG_plate2.R",sep=""))
+# save(sytoxG_plate3, file = paste(dir,"DataObjects/sytoxG_plate3.R",sep=""))
+# save(sytoxG_plate4, file = paste(dir,"DataObjects/sytoxG_plate4.R",sep=""))
+# save(sytoxG_plate5, file = paste(dir,"DataObjects/sytoxG_plate5.R",sep=""))
