@@ -41,12 +41,13 @@ p1 <-
   geom_line() +
   ggtitle("Growth curve for individual chicks")
 
-temp <- confluency_sytoxG_all_plates_for_data_vis[1:72,]
+temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[46081:nrow(confluency_sytoxG_all_plates_for_data_vis_w_selleck_info),]
+temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[1:46080,]
 p1 <- 
-  ggplot(confluency_sytoxG_all_plates_for_data_vis, aes(x=time_elapsed, y=raw_value, colour=data_type, group=compound)) +
+  ggplot(temp, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), colour=Pathway, group=compound)) +
   geom_line() +
   ggtitle("Data Vis")
-
+p1
 
 ggplot(sytoxG_plate1, aes(date)) + 
   geom_line(aes(y = var0, colour = "var0")) + 
