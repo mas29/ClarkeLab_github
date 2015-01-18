@@ -1,7 +1,6 @@
 install.packages("xlsx")
-install.packages("stringr")
 library(xlsx)
-library(stringr)
+library(plyr)
 
 #set parameters - various files
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -46,7 +45,7 @@ reorg_df <- function(df, time_elapsed, datatype) {
     reorganized_df <- rbind(reorganized_df, df_to_add)
   }
   colnames(reorganized_df) <- c("compound", "time_elapsed", "raw_value", "data_type")
-  return(as.data.frame(reorganized_df))
+  return(as.data.frame(reorganized_df, stringsAsFactors=FALSE))
 }
 
 #END FUNCTIONS
@@ -60,6 +59,7 @@ compoundFile_plate5 <- read.xlsx(compound_key_filename, sheetIndex=5)
 
 #get Selleck Bioactive Compound Library
 selleck_bioactive_compound_lib <- read.xlsx(selleck_bioactive_compound_library_filename, sheetIndex=2)
+colnames(selleck_bioactive_compound_lib)[2] <- "compound" #change "Product.Name" to "compound"
 
 #compounds in vector format
 compounds_plate1 <- as.vector(t(compoundFile_plate1))
@@ -156,7 +156,7 @@ confluency_sytoxG_all_plates_compounds_vs_features <- merge(confluency_all_plate
 colnames(confluency_sytoxG_all_plates_compounds_vs_features) <- c("compound",colnames(confluency_sytoxG_all_plates_compounds_vs_features)[-1])
 
 #merge w/selleck data
-confluency_sytoxG_all_plates_compounds_vs_features_w_selleck_info <- merge(confluency_sytoxG_all_plates_compounds_vs_features, selleck_bioactive_compound_lib, all.x=TRUE, by.x="compound", by.y="Product.Name")
+confluency_sytoxG_all_plates_compounds_vs_features_w_selleck_info <- merge(confluency_sytoxG_all_plates_compounds_vs_features, selleck_bioactive_compound_lib, all.x=TRUE, by="compound")
 
 #### ARRANGE DATA FOR DATA VISUALIZATION: COMPOUND as single column, TIME ELAPSED as single column ####
 
@@ -168,7 +168,7 @@ sytoxG_all_plates_reorganized_df <- reorg_df(sytoxG_all_plates_merged, time_elap
 confluency_sytoxG_all_plates_for_data_vis <- rbind(confluency_all_plates_reorganized_df,sytoxG_all_plates_reorganized_df)
 
 #merge w/selleck data
-confluency_sytoxG_all_plates_for_data_vis_w_selleck_info <- merge(confluency_sytoxG_all_plates_for_data_vis, selleck_bioactive_compound_lib, all.x=TRUE, by.x="compound", by.y="Product.Name")
+confluency_sytoxG_all_plates_for_data_vis_w_selleck_info <- join(confluency_sytoxG_all_plates_for_data_vis, selleck_bioactive_compound_lib, type = "left", by="compound")
 
 #save
 save(confluency_sytoxG_all_plates_compounds_vs_features, file=confluency_sytoxG_all_plates_compounds_vs_features_save_location)
