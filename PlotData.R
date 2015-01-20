@@ -43,8 +43,10 @@ p1 <-
 
 temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[46081:nrow(confluency_sytoxG_all_plates_for_data_vis_w_selleck_info),]
 temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[1:46080,]
+temp <- confluency_all_plates_for_data_vis
+temp <- sytoxG_all_plates_for_data_vis
 p1 <- 
-  ggplot(temp, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), colour=Pathway, group=compound)) +
+  ggplot(temp, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
   geom_line() +
   ggtitle("Data Vis")
 p1
