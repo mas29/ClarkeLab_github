@@ -41,16 +41,6 @@ p1 <-
   geom_line() +
   ggtitle("Growth curve for individual chicks")
 
-temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[46081:nrow(confluency_sytoxG_all_plates_for_data_vis_w_selleck_info),]
-temp <- confluency_sytoxG_all_plates_for_data_vis_w_selleck_info[1:46080,]
-temp <- confluency_all_plates_for_data_vis
-temp <- sytoxG_all_plates_for_data_vis
-p1 <- 
-  ggplot(temp, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
-  geom_line() +
-  ggtitle("Data Vis")
-p1
-
 ggplot(sytoxG_plate1, aes(date)) + 
   geom_line(aes(y = var0, colour = "var0")) + 
   geom_line(aes(y = var1, colour = "var1"))
@@ -59,3 +49,21 @@ p1 <-
   ggplot(ChickWeight, aes(x=Time, y=weight, colour=Diet, group=Chick)) +
   geom_line() +
   ggtitle("Growth curve for individual chicks")
+
+######################
+
+p1 <- 
+  ggplot(confluency_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Muscle Cells Over Time")
+p1
+
+p1 <- 
+  ggplot(sytoxG_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time")
+p1

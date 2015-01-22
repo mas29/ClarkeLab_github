@@ -115,3 +115,6 @@ temp_data <- as.numeric(confluency_all_plates_compounds_vs_features[1:2,1:2])
 #compute area under the curve
 temp <- as.numeric(confluency_all_plates_compounds_vs_features[1,1:24])
 AUC_trapezoidal_integration = trapz(time_elapsed,temp)
+
+#find row containing value in specified column (column sytoxG_t0)
+which(grepl(1.8563910, sytoxG_all_plates_compounds_vs_features$sytoxG_t0))

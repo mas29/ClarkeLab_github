@@ -9,10 +9,10 @@ require(pracma)
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 selleck_bioactive_compound_library_filename <- paste(dir,"Files/L1700-Selleck-Bioactive-Compound-Library.xlsx",sep="")
 plates_raw_data_file_names <- c(paste(dir,"Files/1419058541_955__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B1.xlsx",sep=""),
-                               paste(dir,"Files/1419058542_400__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B2.xlsx",sep=""),
-                               paste(dir,"Files/1419058543_181__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B3.xlsx",sep=""),
-                               paste(dir,"Files/1419058544_81__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B4.xlsx",sep=""),
-                               paste(dir,"Files/1419058545_600__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B5.xlsx",sep=""))
+                                paste(dir,"Files/1419058542_400__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B2.xlsx",sep=""),
+                                paste(dir,"Files/1419058543_181__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B3.xlsx",sep=""),
+                                paste(dir,"Files/1419058544_81__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B4.xlsx",sep=""),
+                                paste(dir,"Files/1419058545_600__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B5.xlsx",sep=""))
 confluency_plates_raw_data_sheet_names <- c("Confluency", "Confluency", "Confluency", "Confluency", "Confluency")
 sytoxG_plates_raw_data_sheet_names <- c("Sytox G +ve", "Sytox G", "Sheet2", "Sytox G +ve", "Sytox G +ve")
 compound_key_file_name <- paste(dir,"Files/1419058433_834__1833Key.xlsx",sep="")
@@ -73,6 +73,57 @@ reorg_df <- function(df, time_elapsed, datatype) {
   return(as.data.frame(reorganized_df, stringsAsFactors=FALSE))
 }
 
+#function to get information (most positive, most negative) about the slopes of the sparklines
+
+#param time_elapsed -- vector of times elapsed in experiment
+#param penotypic_marker_values -- confluency or sytox green values corresponding to time elapsed
+get_slope_info <- function(time_elapsed, penotypic_marker_values) {
+  most_negative_slope <- Inf
+  most_negative_slope_timepoint <- -1
+  most_positive_slope <- -Inf
+  most_positive_slope_timepoint <- -1
+  for (i in 2:(length(time_elapsed))) {
+    rise <- penotypic_marker_values[i]-penotypic_marker_values[i-1]
+    run <- time_elapsed[i]-time_elapsed[i-1]
+    slope <- rise/run
+    curr_timepoint <- (time_elapsed[i-1]+time_elapsed[i])/2
+    if (!is.na(slope)) {
+      if (slope > most_positive_slope) {
+        most_positive_slope <- slope
+        most_positive_slope_timepoint <- curr_timepoint
+      }
+      if (slope < most_negative_slope) {
+        most_negative_slope <- slope
+        most_negative_slope_timepoint <- curr_timepoint
+      }
+    }
+  }
+  return(c(most_positive_slope, most_positive_slope_timepoint, 
+           most_negative_slope, most_negative_slope_timepoint))
+}
+
+#function to add various metrics to the data
+
+#param df -- data frame of compounds vs raw values for phenotypic marker
+add_metrics <- function(df) {
+  df[, c(1:24)] <- sapply(df[, c(1:24)], as.numeric)
+  df$mean <- apply(df[1:24], 1, mean)
+  df$min <- apply(df[1:24], 1, min)
+  df$max <- apply(df[1:24], 1, max)
+  #correct area under curve?
+  df$AUC_trapezoidal_integration <- apply(df[1:24], 1, function(x) trapz(time_elapsed, x))
+  #boundary correction for trapezoidal integration? ?trapz
+  df$time_to_max <- apply(df[1:24], 1, function(x) time_elapsed[which.max(x)])
+  df$time_to_min <- apply(df[1:24], 1, function(x) time_elapsed[which.min(x)])
+  df$delta_min_max <- apply(df[1:24], 1, function(x) (max(x)-min(x)))
+  df$delta_start_finish <- apply(df[1:24], 1, function(x) (x[24]-x[1]))
+  df$most_positive_slope <- apply(df[1:24], 1, function(x) (get_slope_info(time_elapsed,x)[1]))
+  df$time_to_most_positive_slope <- apply(df[1:24], 1, function(x) (get_slope_info(time_elapsed,x)[2]))
+  df$most_negative_slope <- apply(df[1:24], 1, function(x) (get_slope_info(time_elapsed,x)[3]))
+  df$time_to_most_negative_slope <- apply(df[1:24], 1, function(x) (get_slope_info(time_elapsed,x)[4]))
+  return(df)
+}
+
 #END FUNCTIONS
 
 #get Selleck Bioactive Compound Library
@@ -123,17 +174,8 @@ save(confluency_sytoxG_all_plates_for_data_vis, file=paste(save_dir,"confluency_
 save(confluency_sytoxG_all_plates_for_data_vis_w_selleck_info, file=paste(save_dir,"confluency_sytoxG_all_plates_for_data_vis_w_selleck_info.R",sep="")) 
 
 #add metrics
-confluency_all_plates_compounds_vs_features[, c(1:24)] <- sapply(confluency_all_plates_compounds_vs_features[, c(1:24)], as.numeric)
-confluency_all_plates_compounds_vs_features$mean <- apply(confluency_all_plates_compounds_vs_features[1:24], 1, mean)
-confluency_all_plates_compounds_vs_features$min <- apply(confluency_all_plates_compounds_vs_features[1:24], 1, min)
-confluency_all_plates_compounds_vs_features$max <- apply(confluency_all_plates_compounds_vs_features[1:24], 1, max)
-#correct area under curve?
-confluency_all_plates_compounds_vs_features$AUC_trapezoidal_integration <- apply(confluency_all_plates_compounds_vs_features[1:24], 1, function(x) trapz(time_elapsed, x))
-#boundary correction for trapezoidal integration? ?trapz
-confluency_all_plates_compounds_vs_features$time_to_max <- apply(confluency_all_plates_compounds_vs_features[1:24], 1, function(x) time_elapsed[which.max(x)])
+confluency_all_plates_compounds_vs_features <- add_metrics(confluency_all_plates_compounds_vs_features)
+sytoxG_all_plates_compounds_vs_features <- add_metrics(sytoxG_all_plates_compounds_vs_features)
 
-temp <- as.numeric(confluency_all_plates_compounds_vs_features[1,1:24])
-which.max( temp)
-
-#ADD METRICS TO SYTOXG AS WELL
-
+#!!!! add metrics before transformation for data vis --- have everything done for machine learning, 
+#!!!! then be able to transfer for data vis
