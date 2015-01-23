@@ -1,3 +1,4 @@
+install.packages("ggplot2")
 library(ggplot2)
 set.seed(1410)
 dsmall <- diamonds[sample(nrow(diamonds), 100), ]
@@ -53,7 +54,7 @@ p1 <-
 ######################
 
 p1 <- 
-  ggplot(confluency_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
+  ggplot(confluency_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(confluency_value), group=compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Confluency") +
@@ -61,7 +62,7 @@ p1 <-
 p1
 
 p1 <- 
-  ggplot(sytoxG_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(raw_value), group=compound)) +
+  ggplot(sytoxG_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(sytoxG_value), group=compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +

@@ -25,6 +25,7 @@ raw_data_start_row <- 8 #the excel sheet starts the raw data at what row
 raw_data_start_col <- 3 #the excel sheet starts the raw data at what column
 time_elapsed <- seq(0,46,2)
 save_dir <- paste(dir,"DataObjects/",sep="")
+na_value <- 0.2320489
 
 #FUNCTIONS
 
@@ -59,6 +60,8 @@ read_data <- function(plate_file_names, plate_sheet_names, raw_data_start_row, r
   merged_data <- as.data.frame(t(as.data.frame(merged_data)))  
   #set column names as "sytoxG_t0", "sytoxG_t2", etc.
   colnames(merged_data) <- paste(phenotypic_marker_name,"_t", time_elapsed, sep = "")
+  #replace NA with configured na_value
+  merged_data[ merged_data == NA] <- na_value #this line turns df from num to chr :( why??
   return(merged_data)
 }
 
