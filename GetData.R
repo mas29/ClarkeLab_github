@@ -1,12 +1,16 @@
 install.packages("xlsx")
 install.packages("pracma")
+install.packages("stringr")
 library(xlsx)
 library(stringr)
 library(plyr)
 require(pracma)
 
+options(stringsAsFactors=F)
+
 #set parameters - various files
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+# dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+dir = "/Users/mas29/Documents/ClarkeLab_github/"
 selleck_bioactive_compound_library_filename <- paste(dir,"Files/L1700-Selleck-Bioactive-Compound-Library.xlsx",sep="")
 plates_raw_data_file_names <- c(paste(dir,"Files/1419058541_955__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B1.xlsx",sep=""),
                                 paste(dir,"Files/1419058542_400__C2C12-diff_Tunicamycin_1833_8Sep14%252B-%252BPlate%252B2.xlsx",sep=""),
@@ -33,12 +37,13 @@ save_dir <- paste(dir,"DataObjects/",sep="")
 #param compounds_key_file_name -- name of file with compound key for each plate
 #param compounds_key_sheet_names -- names of sheets of excel file with compound key for each plate
 #param num_plates -- number of plates
-
-read_data_MERGED <- function(plate_file_names, plate_sheet_names, raw_data_start_row, raw_data_start_col, compounds_key_file_name, compounds_key_sheet_names, num_plates) {
+#param phenotypic_marker_name -- name of the phenotypic marker (ex."confluency")
+#param time_elapsed -- vector of time elapsed
+read_data <- function(plate_file_names, plate_sheet_names, raw_data_start_row, raw_data_start_col, compounds_key_file_name, compounds_key_sheet_names, num_plates, phenotypic_marker_name, time_elapsed) {
   merged_data <- data.frame()
   for (i in 1:num_plates) {
     #read in raw data for plate
-    raw_data <- read.xlsx(plate_file_names[i], sheetName=plate_sheet_names[i], stringsAsFactors = FALSE)
+    raw_data <- read.xlsx(plate_file_names[i], sheetName=plate_sheet_names[i])
     #get data only, no excess 
     trimmed_data <- raw_data[raw_data_start_row:nrow(raw_data),raw_data_start_col:ncol(raw_data)]
     #get compound list for each plate
@@ -50,7 +55,11 @@ read_data_MERGED <- function(plate_file_names, plate_sheet_names, raw_data_start
     #merge plate data in with others (subset because it puts extensions on repeated columns (ex. Empty.1.1, Empty.1.2)) 
     merged_data <- c(merged_data, trimmed_data[1:nrow(trimmed_data), 1:ncol(trimmed_data)])
   }
-  return(as.data.frame(merged_data, stringsAsFactors=F))
+  #transpose so that rows are compounds, columns are time elapsed
+  merged_data <- as.data.frame(t(as.data.frame(merged_data)))  
+  #set column names as "sytoxG_t0", "sytoxG_t2", etc.
+  colnames(merged_data) <- paste(phenotypic_marker_name,"_t", time_elapsed, sep = "")
+  return(merged_data)
 }
 
 #function to reorganize the data frame s.t. compound is one row, time elapsed is one row, fluorescence/confluency 
@@ -62,15 +71,21 @@ read_data_MERGED <- function(plate_file_names, plate_sheet_names, raw_data_start
 
 reorg_df <- function(df, time_elapsed, datatype) {
   reorganized_df <- NULL
-  for (i in 1:ncol(df)) {
-    compound <- colnames(df)[i]
-    compound_col <- rep(compound, nrow(df))
-    type <- rep(datatype, nrow(df))
-    df_to_add <- cbind(compound_col, time_elapsed, df[,i], type)
+  for (i in 1:nrow(df)) { #for each compound
+    compound <- rownames(df)[i]
+    compound_col <- rep(compound, length(time_elapsed))
+    incucyte_vals <- t(df[i,1:24])
+    type <- rep(datatype, length(time_elapsed))
+    df_to_add <- cbind(compound_col, time_elapsed, incucyte_vals, type)
+    for (j in 25:ncol(df)) { #add metrics
+      new_col <- rep(df[i,j], length(time_elapsed))
+      df_to_add <- cbind(df_to_add, new_col)
+    }
     reorganized_df <- rbind(reorganized_df, df_to_add)
   }
-  colnames(reorganized_df) <- c("compound", "time_elapsed", "raw_value", "data_type")
-  return(as.data.frame(reorganized_df, stringsAsFactors=FALSE))
+  colnames(reorganized_df) <- c("compound", "time_elapsed", paste(datatype,"_value",sep=""), "data_type", colnames(df)[25:ncol(df)])
+  rownames(reorganized_df) <- NULL
+  return(as.data.frame(reorganized_df))
 }
 
 #function to get information (most positive, most negative) about the slopes of the sparklines
@@ -126,23 +141,40 @@ add_metrics <- function(df) {
 
 #END FUNCTIONS
 
+#### ARRANGE DATA FOR FEATURE EXTRACTION: COMPOUNDS vs FEATURES - SUCH THAT COMPOUNDS ARE ROWS, TIMES ELAPSED ARE COLUMNS ####
+
+#read data
+confluency_all_plates_compounds_vs_features <- read_data(plates_raw_data_file_names, confluency_plates_raw_data_sheet_names, raw_data_start_row, raw_data_start_col, compound_key_file_name, compound_key_sheet_names, 5, "confluency", time_elapsed)
+sytoxG_all_plates_compounds_vs_features <- read_data(plates_raw_data_file_names, sytoxG_plates_raw_data_sheet_names, raw_data_start_row, raw_data_start_col, compound_key_file_name, compound_key_sheet_names, 5, "sytoxG", time_elapsed)
+
+#add metrics
+confluency_all_plates_compounds_vs_features <- add_metrics(confluency_all_plates_compounds_vs_features)
+sytoxG_all_plates_compounds_vs_features <- add_metrics(sytoxG_all_plates_compounds_vs_features)
+
+#### ARRANGE DATA FOR DATA VISUALIZATION: COMPOUND as single column, TIME ELAPSED as single column ####
+
+#reorganize format for data vis
+confluency_all_plates_for_data_vis <- reorg_df(confluency_all_plates_compounds_vs_features, time_elapsed, "confluency")
+sytoxG_all_plates_for_data_vis <- reorg_df(sytoxG_all_plates_compounds_vs_features, time_elapsed, "sytoxG")
+
+#save
+save(confluency_all_plates_compounds_vs_features, file=paste(save_dir,"confluency_all_plates_compounds_vs_features.R",sep=""))
+save(sytoxG_all_plates_compounds_vs_features, file=paste(save_dir,"sytoxG_all_plates_compounds_vs_features.R",sep=""))
+save(confluency_all_plates_for_data_vis, file=paste(save_dir,"confluency_all_plates_for_data_vis.R",sep=""))
+save(sytoxG_all_plates_for_data_vis, file=paste(save_dir,"sytoxG_all_plates_for_data_vis.R",sep=""))
+
+#export to csv
+write.table(sytoxG_all_plates_compounds_vs_features, file = paste(save_dir,"sytoxG_all_plates_compounds_vs_features.csv",sep=""), 
+            append = FALSE, quote = FALSE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = TRUE, col.names = NA)
+write.table(confluency_all_plates_compounds_vs_features, file = paste(save_dir,"confluency_all_plates_compounds_vs_features.csv",sep=""), 
+            append = FALSE, quote = FALSE, sep = ",", eol = "\n", na = "NA", dec = ".", row.names = TRUE, col.names = NA)
+
+
+
+
 #get Selleck Bioactive Compound Library
 selleck_bioactive_compound_lib <- read.xlsx(selleck_bioactive_compound_library_filename, sheetIndex=2)
 colnames(selleck_bioactive_compound_lib)[2] <- "compound" #change "Product.Name" to "compound"
-
-#read in and format data
-confluency_all_plates_merged <- read_data_MERGED(plates_raw_data_file_names, confluency_plates_raw_data_sheet_names, raw_data_start_row, raw_data_start_col, compound_key_file_name, compound_key_sheet_names, 5)
-sytoxG_all_plates_merged <- read_data_MERGED(plates_raw_data_file_names, sytoxG_plates_raw_data_sheet_names, raw_data_start_row, raw_data_start_col, compound_key_file_name, compound_key_sheet_names, 5)
-
-#### ARRANGE DATA FOR FEATURE EXTRACTION: COMPOUNDS vs FEATURES - SUCH THAT COMPOUNDS ARE ROWS, TIMES ELAPSED ARE COLUMNS ####
-
-#transpose so that rows are compounds, columns are time elapsed
-confluency_all_plates_compounds_vs_features <- as.data.frame(t(confluency_all_plates_merged), stringsAsFactors=F)
-sytoxG_all_plates_compounds_vs_features <- as.data.frame(t(sytoxG_all_plates_merged), stringsAsFactors=F)
-
-#set column names as "sytoxG_t0", "sytoxG_t2", etc.
-colnames(confluency_all_plates_compounds_vs_features) <- paste("confluency_t", time_elapsed, sep = "")
-colnames(sytoxG_all_plates_compounds_vs_features) <- paste("sytoxG_t", time_elapsed, sep = "")
 
 #merge two datasets, confluency & sytoxG, rename first column to "compound" instead of "row.names"
 confluency_sytoxG_all_plates_compounds_vs_features <- merge(confluency_all_plates_compounds_vs_features,sytoxG_all_plates_compounds_vs_features, by="row.names", all.x=TRUE, all.y=TRUE)
@@ -151,31 +183,9 @@ colnames(confluency_sytoxG_all_plates_compounds_vs_features) <- c("compound",col
 #merge w/selleck data
 confluency_sytoxG_all_plates_compounds_vs_features_w_selleck_info <- merge(confluency_sytoxG_all_plates_compounds_vs_features, selleck_bioactive_compound_lib, all.x=TRUE, by="compound")
 
-#### ARRANGE DATA FOR DATA VISUALIZATION: COMPOUND as single column, TIME ELAPSED as single column ####
-
-#reorganize for data vis
-confluency_all_plates_for_data_vis <- reorg_df(confluency_all_plates_merged, time_elapsed, "confluency")
-sytoxG_all_plates_for_data_vis <- reorg_df(sytoxG_all_plates_merged, time_elapsed, "sytoxG")
-
 #merge confluency & sytoxG
 confluency_sytoxG_all_plates_for_data_vis <- rbind(confluency_all_plates_for_data_vis,sytoxG_all_plates_for_data_vis)
 
 #merge w/selleck data
 confluency_sytoxG_all_plates_for_data_vis_w_selleck_info <- join(confluency_sytoxG_all_plates_for_data_vis, selleck_bioactive_compound_lib, type = "left", by="compound")
 
-#save
-save(confluency_all_plates_compounds_vs_features, file=paste(save_dir,"confluency_all_plates_compounds_vs_features.R",sep=""))
-save(sytoxG_all_plates_compounds_vs_features, file=paste(save_dir,"sytoxG_all_plates_compounds_vs_features.R",sep=""))
-save(confluency_sytoxG_all_plates_compounds_vs_features, file=paste(save_dir,"confluency_sytoxG_all_plates_compounds_vs_features.R",sep=""))
-save(confluency_sytoxG_all_plates_compounds_vs_features_w_selleck_info, file=paste(save_dir,"confluency_sytoxG_all_plates_compounds_vs_features_w_selleck_info.R",sep=""))
-save(confluency_all_plates_for_data_vis, file=paste(save_dir,"confluency_all_plates_for_data_vis.R",sep=""))
-save(sytoxG_all_plates_for_data_vis, file=paste(save_dir,"sytoxG_all_plates_for_data_vis.R",sep=""))
-save(confluency_sytoxG_all_plates_for_data_vis, file=paste(save_dir,"confluency_sytoxG_all_plates_for_data_vis.R",sep=""))
-save(confluency_sytoxG_all_plates_for_data_vis_w_selleck_info, file=paste(save_dir,"confluency_sytoxG_all_plates_for_data_vis_w_selleck_info.R",sep="")) 
-
-#add metrics
-confluency_all_plates_compounds_vs_features <- add_metrics(confluency_all_plates_compounds_vs_features)
-sytoxG_all_plates_compounds_vs_features <- add_metrics(sytoxG_all_plates_compounds_vs_features)
-
-#!!!! add metrics before transformation for data vis --- have everything done for machine learning, 
-#!!!! then be able to transfer for data vis

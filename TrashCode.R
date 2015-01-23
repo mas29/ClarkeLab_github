@@ -118,3 +118,54 @@ AUC_trapezoidal_integration = trapz(time_elapsed,temp)
 
 #find row containing value in specified column (column sytoxG_t0)
 which(grepl(1.8563910, sytoxG_all_plates_compounds_vs_features$sytoxG_t0))
+
+
+#function to read in and format data
+
+#param plate_file_names -- names of excel files with plate data
+#param plate_sheet_names -- names of sheets of excel files with plate data
+#param raw_data_start_row -- the excel sheet starts the raw data at which row
+#param raw_data_start_col -- the excel sheet starts the raw data at which column
+#param compounds_key_file_name -- name of file with compound key for each plate
+#param compounds_key_sheet_names -- names of sheets of excel file with compound key for each plate
+#param num_plates -- number of plates
+
+read_data <- function(plate_file_names, plate_sheet_names, raw_data_start_row, raw_data_start_col, compounds_key_file_name, compounds_key_sheet_names, num_plates) {
+  merged_data <- data.frame()
+  for (i in 1:num_plates) {
+    #read in raw data for plate
+    raw_data <- read.xlsx(plate_file_names[i], sheetName=plate_sheet_names[i], stringsAsFactors = FALSE)
+    #get data only, no excess 
+    trimmed_data <- raw_data[raw_data_start_row:nrow(raw_data),raw_data_start_col:ncol(raw_data)]
+    #get compound list for each plate
+    compounds <- as.vector(t(read.xlsx(compounds_key_file_name, sheetName=compounds_key_sheet_names[i])))
+    #format raw data such that colnames: compounds for that plate
+    colnames(trimmed_data) <- compounds
+    #change names of empties to reflect plate they came from
+    names(trimmed_data) <- ifelse(names(trimmed_data) %in% "Empty", str_c(names(trimmed_data), '.', i), names(trimmed_data))
+    #merge plate data in with others (subset because it puts extensions on repeated columns (ex. Empty.1.1, Empty.1.2)) 
+    merged_data <- c(merged_data, trimmed_data[1:nrow(trimmed_data), 1:ncol(trimmed_data)])
+  }
+  return(as.data.frame(merged_data, stringsAsFactors=F))
+}
+
+#function to reorganize the data frame s.t. compound is one row, time elapsed is one row, fluorescence/confluency 
+#value is one row, whether it's "confluency" or "sytoxG" data is one row
+
+#param df: data frame of time elapsed vs compound
+#param time_elapsed: vector of time elapsed
+#param datatype: "confluency" or "sytoxG"
+
+reorg_df <- function(df, time_elapsed, datatype) {
+  reorganized_df <- NULL
+  for (i in 1:ncol(df)) {
+    compound <- colnames(df)[i]
+    compound_col <- rep(compound, nrow(df))
+    type <- rep(datatype, nrow(df))
+    df_to_add <- cbind(compound_col, time_elapsed, df[,i], type)
+    reorganized_df <- rbind(reorganized_df, df_to_add)
+  }
+  colnames(reorganized_df) <- c("compound", "time_elapsed", "raw_value", "data_type")
+  return(as.data.frame(reorganized_df, stringsAsFactors=FALSE))
+}
+
