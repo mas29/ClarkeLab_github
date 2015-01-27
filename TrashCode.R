@@ -220,4 +220,44 @@ p1 <-
   geom_line() +
   ggtitle("Growth curve for individual chicks")
 
+p1 <- 
+  ggplot(confluency_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(confluency_value), group=compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Muscle Cells Over Time")
+p1
 
+
+p1 <- 
+  ggplot(sytoxG_all_plates_for_data_vis, aes(x=as.numeric(time_elapsed), y=as.numeric(sytoxG_value), group=compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time")
+p1
+
+p1 <- 
+  ggplot(sytoxG_all_plates_for_data_vis, 
+         aes(x=as.numeric(time_elapsed), y=as.numeric(sytoxG_value), group=compound, colour = as.numeric(max))) +
+  geom_line() +
+  scale_color_gradient(low="darkkhaki", high="darkgreen") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p1
+
+ggsave(p1,file="sytoxG_first_half_scaled.pdf")
+ggsave(path = "./Plots", plot = last_plot(),filename = "hi",
+       scale = 1, width = 1, height = 1, units = c("in"), dpi = 300, limitsize = TRUE)
+
+
+strip.text.x = element_text(size=3, angle=75),
+strip.text.y = element_text(size=12, face="bold"),
+axis.text = element_text(size=3),
+axis.ticks.length = unit(.0085, "cm"),
+
+legend.title=element_text("horizontal"),
+#get rid of text
++ theme(text = element_blank())
