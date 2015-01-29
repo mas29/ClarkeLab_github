@@ -14,7 +14,8 @@ library(reshape)
 
 #set parameters - various files
 #dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-dir = "/Users/mas29/Documents/ClarkeLab_github/"
+dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+#dir = "/Users/mas29/Documents/ClarkeLab_github/"
 time_elapsed <- seq(0,46,2)
 na_value <- 0.2320489
 

@@ -1,6 +1,9 @@
 # install.packages("ggplot2")
+# install.packages("grid")
+# install.packages("plyr")
 library(ggplot2)
 library("grid")
+library(ply)
 
 #set paths
 # dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -133,6 +136,8 @@ ggplot(transform(sytoxG_data,
 sytoxG_data_empty <- transform(sytoxG_data, empty = grepl("Empty", sytoxG_data$Compound))
 sytoxG_mean_sd_empty <- ddply(sytoxG_data_empty, ~ Plate * time_elapsed * empty, summarize,
                         mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+# Error: 'names' attribute [46080] must be the same length as the vector [9216] 
 
 #sytoxG - plot mean and sd values for each plate, empty vs not empty
 ggplot(sytoxG_mean_sd_empty, 
