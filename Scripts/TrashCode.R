@@ -305,3 +305,12 @@ temp <- data.frame(Compound=as.Date(character()),
                    `44`=double(),
                    `46`=double(),
                    stringsAsFactors=FALSE) 
+
+temp <- aggregate(phenotype_value ~ Plate * time_elapsed, sytoxG_data, FUN = mean) 
+temp <- tbl_df(temp)
+temp <- temp %>% 
+  arrange(Plate)
+# aggregate(phenotype_value ~ Plate, sytoxG_data, FUN = sd)
+
+sm_ds$time_to_most_positive_slope <- factor(sm_ds$time_to_most_positive_slope, levels = seq(1,45,2))
+sm_ds$time_to_max <- factor(sm_ds$time_to_max, levels = seq(0,46,2))

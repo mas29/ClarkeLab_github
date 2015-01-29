@@ -6,8 +6,9 @@ library("grid")
 # dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
-#load dataset
-load(paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+# COMMENTED OUT because IRMACS fatal error with saving this object
+# #load dataset
+# load(paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 
 sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Sytox Green")
 confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Confluency")
@@ -57,50 +58,51 @@ ggplot(sytoxG_data,
         panel.margin = unit(.085, "cm"),
         strip.background = element_rect(fill = "white"))
 
-sm_ds$time_to_most_negative_slope <- factor(sm_ds$time_to_most_negative_slope, levels = seq(1,45,2))
-sm_ds$time_to_max <- factor(sm_ds$time_to_max, levels = seq(0,46,2))
 
-
-#curves by time to sleepest slope, time to max
+#sytoxG sparklines, faceted by time to most positive slope, time to max
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time") +
-  facet_grid(time_to_most_negative_slope ~ time_to_max, scales = "fixed") +
+  ggtitle("Sytox Green - Facets: Time to Most Positive Slope vs Time to Max") +
+  facet_grid(time_to_most_positive_slope ~ time_to_max, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"))
 
+#sytoxG sparklines, faceted by by time to max vs max
 ggplot(transform(sytoxG_data, max_cut = cut(max, seq(min(max),max(max),length.out=4))), 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time - facets are time to max, max") +
+  ggtitle("Sytox Green - Muscle Cells Over Time - Facets: Time to Max, Max") +
   facet_grid(max_cut~time_to_max, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
 
+#sytoxG - most positive slope vs max value
 ggplot(transform(sytoxG_data, max_cut = cut(max, seq(min(max),max(max),length.out=4)), 
-                 most_negative_slope_cut = cut(most_negative_slope, seq(min(most_negative_slope), max(most_negative_slope), 3))), 
+                 most_positive_slope_cut = cut(most_positive_slope, seq(min(most_positive_slope), max(most_positive_slope), 3))), 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time - facets are most negative slope, max") +
-  facet_grid(max_cut~most_negative_slope_cut, scales = "fixed") +
+  ggtitle("Sytox Green - Muscle Cells Over Time - Facets: Most Positive Slope, Max") +
+  facet_grid(max_cut~most_positive_slope_cut, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
-        axis.text = element_blank())
+        axis.text = element_blank(), 
+        strip.text.x = element_text(size=4, angle=75),
+        strip.text.y = element_text(size=8))
 
-# compare plates
+# compare sytoxG sparklines, faceted by plates
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
   geom_line() +
@@ -112,7 +114,38 @@ ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"))
 
-### PLOT EMPTIES
+#calculate mean and sd sytoxG values for each plate
+sytoxG_mean_sd <- ddply(sytoxG_data, ~ Plate * time_elapsed, summarize,
+      mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#plot mean and sd sytoxG values for each plate
+ggplot(sytoxG_mean_sd, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_line(aes(size=sd)) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean") +
+  ggtitle("Sytox Green - Mean & SD") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+#calculate mean and sd sytoxG values for each plate, empty vs not empty
+sytoxG_mean_sd_empty <- ddply(sytoxG_data, Compound ~ Plate * time_elapsed, summarize,
+                        mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#plot mean and sd sytoxG values for each plate, empty vs not empty
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_line(aes(size=sd)) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean") +
+  ggtitle("Sytox Green - Mean & SD") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+
+# plot sparklines for negative controls vs others
 ggplot(transform(sytoxG_data,
                  empty = grepl("Empty", sytoxG_data$Compound)), 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
@@ -127,8 +160,15 @@ ggplot(transform(sytoxG_data,
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
 
-temp <- subset(sytoxG_data,Compound == "Empty")
-
 
 ### which has slope zero?
+
+temp <- sytoxG_data %>%
+  arrange(max) %>%
+  filter(phenotypic_Marker=="Sytox Green") %>%
+  filter(Compound == "Bilobalide")
+
+temp <- temp %>%
+  arrange(Compound, phenotypic_Marker, time_elapsed)
+
 
