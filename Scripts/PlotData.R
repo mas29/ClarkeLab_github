@@ -111,3 +111,6 @@ ggplot(sytoxG_data,
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"))
+
+### PLOT EMPTIES
+
