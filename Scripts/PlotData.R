@@ -114,37 +114,6 @@ ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"))
 
-#calculate mean and sd sytoxG values for each plate
-sytoxG_mean_sd <- ddply(sytoxG_data, ~ Plate * time_elapsed, summarize,
-      mean = mean(phenotype_value), sd = sd(phenotype_value))
-
-#plot mean and sd sytoxG values for each plate
-ggplot(sytoxG_mean_sd, 
-       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
-  geom_line(aes(size=sd)) +
-  xlab("Time Elapsed") +
-  ylab("Sytox Green Mean") +
-  ggtitle("Sytox Green - Mean & SD") +
-  theme(panel.grid = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white")) 
-
-#calculate mean and sd sytoxG values for each plate, empty vs not empty
-sytoxG_mean_sd_empty <- ddply(sytoxG_data, Compound ~ Plate * time_elapsed, summarize,
-                        mean = mean(phenotype_value), sd = sd(phenotype_value))
-
-#plot mean and sd sytoxG values for each plate, empty vs not empty
-ggplot(sytoxG_mean_sd_empty, 
-       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
-  geom_line(aes(size=sd)) +
-  xlab("Time Elapsed") +
-  ylab("Sytox Green Mean") +
-  ggtitle("Sytox Green - Mean & SD") +
-  theme(panel.grid = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white")) 
-
-
 # plot sparklines for negative controls vs others
 ggplot(transform(sytoxG_data,
                  empty = grepl("Empty", sytoxG_data$Compound)), 
@@ -159,6 +128,27 @@ ggplot(transform(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
+
+#sytoxG - calculate mean and sd values for each plate, empty vs not empty
+sytoxG_data_empty <- transform(sytoxG_data, empty = grepl("Empty", sytoxG_data$Compound))
+sytoxG_mean_sd_empty <- ddply(sytoxG_data_empty, ~ Plate * time_elapsed * empty, summarize,
+                        mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#sytoxG - plot mean and sd values for each plate, empty vs not empty
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_line(aes(size=sd)) +
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean") +
+  ggtitle("Sytox Green - Mean & SD (line size) & Negative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+
+
+
 
 
 ### which has slope zero?

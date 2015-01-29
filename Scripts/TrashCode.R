@@ -314,3 +314,19 @@ temp <- temp %>%
 
 sm_ds$time_to_most_positive_slope <- factor(sm_ds$time_to_most_positive_slope, levels = seq(1,45,2))
 sm_ds$time_to_max <- factor(sm_ds$time_to_max, levels = seq(0,46,2))
+
+
+#calculate mean and sd sytoxG values for each plate
+sytoxG_mean_sd <- ddply(sytoxG_data, ~ Plate * time_elapsed, summarize,
+                        mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#plot mean and sd sytoxG values for each plate
+ggplot(sytoxG_mean_sd, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_line(aes(size=sd)) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean") +
+  ggtitle("Sytox Green - Mean & SD") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
