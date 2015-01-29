@@ -149,6 +149,9 @@ ggplot(sytoxG_mean_sd_empty,
 
 
 
+## geom_ribbon ??
+
+http://svitsrv25.epfl.ch/R-doc/library/ggplot2/html/geom_ribbon.html
 
 
 ### which has slope zero?
