@@ -116,8 +116,9 @@ confluency_sytoxG_data <- tbl_df(confluency_sytoxG_data)
 confluency_sytoxG_data <- confluency_sytoxG_data %>%
   arrange(Compound, phenotypic_Marker, time_elapsed)
 
-#save
-save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+# CAUSES FATAL ERROR IN IRMACS...
+# #save
+# save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 
 #export to tsv
 write.table(confluency_sytoxG_data, file = paste(dir,"DataOutput/confluency_sytoxG_data.tsv",sep=""), 
