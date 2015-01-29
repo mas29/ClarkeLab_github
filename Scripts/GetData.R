@@ -1,6 +1,9 @@
 # install.packages("xlsx")
 # install.packages("pracma")
 # install.packages("stringr")
+# install.packages("dplyr")
+# install.packages("tidyr")
+# install.packages("reshape")
 library(xlsx)
 library(stringr)
 library(plyr)
@@ -10,8 +13,8 @@ library(tidyr)
 library(reshape)
 
 #set parameters - various files
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-#dir = "/Users/mas29/Documents/ClarkeLab_github/"
+#dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+dir = "/Users/mas29/Documents/ClarkeLab_github/"
 time_elapsed <- seq(0,46,2)
 na_value <- 0.2320489
 
@@ -74,12 +77,16 @@ add_metrics <- function(df, start, end, time_elapsed) {
 
 #load toXL, which is all the data from 1833 compounds, created by the Reconfigure_dc.R script
 #!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-load("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1421981517_326__incucyte-c2c12%252Bdiff%252Btun.RData")
+load(paste(dir,"Files/1421981517_326__incucyte-c2c12%252Bdiff%252Btun.RData",sep=""))
+
 confluency_sytoxG_data <- toXL
 confluency_data <- confluency_sytoxG_data[,c(1:42)]
 sytoxG_data <- confluency_sytoxG_data[,c(1:15,43:ncol(confluency_sytoxG_data))]
 confluency_sytoxG_data <- rbind(confluency_data,sytoxG_data)
 confluency_sytoxG_data <- confluency_sytoxG_data[,colSums(is.na(confluency_sytoxG_data))<nrow(confluency_sytoxG_data)] #remove columns where ALL values are NA
+confluency_sytoxG_data$Compound <- as.character(confluency_sytoxG_data$Compound) #required for changing Empty compound names to include plate & position
+confluency_sytoxG_data[which(confluency_sytoxG_data$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
+  with(confluency_sytoxG_data, paste(Compound, Plate, Position, sep = "_"))[which(confluency_sytoxG_data$Compound == "Empty")]
 
 ###### THE DATA IS WRONGLY input for toXL? ????????????????? ##############
 

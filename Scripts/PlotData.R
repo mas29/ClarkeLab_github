@@ -3,8 +3,8 @@ library(ggplot2)
 library("grid")
 
 #set paths
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-#dir = "/Users/mas29/Documents/ClarkeLab_github/"
+# dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
 #load dataset
 load(paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
@@ -113,4 +113,22 @@ ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"))
 
 ### PLOT EMPTIES
+ggplot(transform(sytoxG_data,
+                 empty = grepl("Empty", sytoxG_data$Compound)), 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound, Plate)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time - empty vs not empty") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+
+temp <- subset(sytoxG_data,Compound == "Empty")
+
+
+### which has slope zero?
 
