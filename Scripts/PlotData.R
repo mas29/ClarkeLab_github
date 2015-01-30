@@ -137,16 +137,29 @@ sytoxG_data_empty <- transform(sytoxG_data, empty = grepl("Empty", sytoxG_data$C
 sytoxG_mean_sd_empty <- ddply(sytoxG_data_empty, ~ Plate * time_elapsed * empty, summarize,
                         mean = mean(phenotype_value), sd = sd(phenotype_value))
 
-# Error: 'names' attribute [46080] must be the same length as the vector [9216] 
 
-#sytoxG - plot mean and sd values for each plate, empty vs not empty
+# Error: 'names' attribute [46080] must be the same length as the vector [....] 
+
+#sytoxG - plot mean and sd values for each plate, neg. control vs others - using geom_line()
 ggplot(sytoxG_mean_sd_empty, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
   geom_line(aes(size=sd)) +
   facet_grid(~ empty, scales = "fixed") +
   xlab("Time Elapsed") +
   ylab("Sytox Green Mean") +
-  ggtitle("Sytox Green - Mean & SD (line size) & Negative Control T/F (facets)") +
+  ggtitle("Sytox Green - Plate Mean & SD (line size) & Negative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+#sytoxG - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean") +
+  ggtitle("Sytox Green - Plate Mean & SD (line size) & Negative Control T/F (facets)") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 

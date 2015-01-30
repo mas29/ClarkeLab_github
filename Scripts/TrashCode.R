@@ -330,3 +330,8 @@ ggplot(sytoxG_mean_sd,
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 
+
+
+sytoxG_data %>% 
+  filter(Plate == 1, time_elapsed == 0) %>%
+  summarise(sd = sd(phenotype_value, na.rm = TRUE))
