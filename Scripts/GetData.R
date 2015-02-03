@@ -13,8 +13,8 @@ library(tidyr)
 library(reshape)
 
 #set parameters - various files
-#dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
 #dir = "/Users/mas29/Documents/ClarkeLab_github/"
 time_elapsed <- seq(0,46,2)
 na_value <- 0.2320489
@@ -74,6 +74,8 @@ add_metrics <- function(df, start, end, time_elapsed) {
   return(df)
 }
 
+#### potentially want to change to ddply?????
+
 #END FUNCTIONS
 
 #load toXL, which is all the data from 1833 compounds, created by the Reconfigure_dc.R script
@@ -110,6 +112,8 @@ colnames(confluency_sytoxG_data)[31] <- "phenotype_value"
 #convert factor to int for time_elapsed column
 confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed))
 
+#add drugbank data??
+
 #convert to tbl_df
 confluency_sytoxG_data <- tbl_df(confluency_sytoxG_data)
 
@@ -117,9 +121,11 @@ confluency_sytoxG_data <- tbl_df(confluency_sytoxG_data)
 confluency_sytoxG_data <- confluency_sytoxG_data %>%
   arrange(Compound, phenotypic_Marker, time_elapsed)
 
+
 # CAUSES FATAL ERROR IN IRMACS...
 # #save
 # save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+
 
 #export to tsv
 write.table(confluency_sytoxG_data, file = paste(dir,"DataOutput/confluency_sytoxG_data.tsv",sep=""), 

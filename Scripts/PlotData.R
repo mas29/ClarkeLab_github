@@ -3,11 +3,11 @@
 # install.packages("plyr")
 library(ggplot2)
 library("grid")
-library(ply)
+library(plyr)
 
 #set paths
-# dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-dir = "/Users/mas29/Documents/ClarkeLab_github/"
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+# dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
 # COMMENTED OUT because IRMACS fatal error with saving this object
 # #load dataset
@@ -28,7 +28,6 @@ ggplot(sytoxG_data,
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle("Sytox Green - Muscle Cells Over Time") +
-  facet_grid(Compound~., scales = "fixed") +
   facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
   labs(color = "Delta (max-min)") +
   theme(panel.grid = element_blank(),
@@ -49,7 +48,6 @@ ggplot(sytoxG_data,
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle("Sytox Green - Muscle Cells Over Time") +
-  facet_grid(Compound~., scales = "free") +
   facet_wrap(~ Compound, ncol = 44, scales = "free") +
   labs(color = "Delta (max-min)") +
   theme(panel.grid = element_blank(),
@@ -139,6 +137,8 @@ sytoxG_mean_sd_empty <- ddply(sytoxG_data_empty, ~ Plate * time_elapsed * empty,
 
 
 # Error: 'names' attribute [46080] must be the same length as the vector [....] 
+# potential fix? :  install.packages("plyr", dependencies = TRUE)  
+#                   library(plyr)
 
 #sytoxG - plot mean and sd values for each plate, neg. control vs others - using geom_line()
 ggplot(sytoxG_mean_sd_empty, 
@@ -164,13 +164,27 @@ ggplot(sytoxG_mean_sd_empty,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 
 
-
-
-
-## geom_ribbon ??
-
-http://svitsrv25.epfl.ch/R-doc/library/ggplot2/html/geom_ribbon.html
-
+#background continous according to delta
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound)) +
+  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                         midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+  labs(fill = "Delta (max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        strip.background = element_rect(fill = "white"))
 
 ### which has slope zero?
 
