@@ -335,3 +335,16 @@ ggplot(sytoxG_mean_sd,
 sytoxG_data %>% 
   filter(Plate == 1, time_elapsed == 0) %>%
   summarise(sd = sd(phenotype_value, na.rm = TRUE))
+
+
+#sytoxG - plot mean and sd values for each plate, neg. control vs others - using geom_line()
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_line(aes(size=sd)) +
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean & SD") +
+  ggtitle("Sytox Green - Plate Mean & SD (line size) & Negative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
