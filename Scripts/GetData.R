@@ -13,9 +13,9 @@ library(tidyr)
 library(reshape)
 
 #set parameters - various files
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
-#dir = "/Users/mas29/Documents/ClarkeLab_github/"
+dir = "/Users/mas29/Documents/ClarkeLab_github/"
 time_elapsed <- seq(0,46,2)
 na_value <- 0.2320489
 
@@ -71,10 +71,24 @@ add_metrics <- function(df, start, end, time_elapsed) {
   df$time_to_most_positive_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[2]))
   df$most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[3]))
   df$time_to_most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[4]))
+  df$empty <- apply(df, 1, function(x) (grepl("Empty", x[1])))#negative control (T/F) 
   return(df)
 }
 
 #### potentially want to change to ddply?????
+
+#function to get features only
+#@param df -- data frame as tbl_df
+get_features <- function(df) {
+  df <- df %>%
+    select(Compound, Catalog.No., Rack.Number, M.w., CAS.Number, Form, Targets, Information, Smiles, Max.Solubility.in.DMSO..mM.,
+           URL, Pathway, Plate, Position, Screen, phenotypic_Marker, Elapsed, mean, min, max, AUC_trapezoidal_integration, time_to_max,
+           time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope, most_negative_slope, 
+           time_to_most_negative_slope, empty) %>%
+    distinct()
+  return(df)
+}
+
 
 #END FUNCTIONS
 
@@ -105,9 +119,9 @@ confluency_sytoxG_data[18:41][is.na(confluency_sytoxG_data[18:41])] <- na_value
 confluency_sytoxG_data <- add_metrics(confluency_sytoxG_data, 18, 41, time_elapsed)
 
 #reshape for data vis 
-confluency_sytoxG_data <- melt(confluency_sytoxG_data, id=(colnames(confluency_sytoxG_data)[c(1:17,42:53)]), measure.vars=(colnames(confluency_sytoxG_data)[18:41]))
-colnames(confluency_sytoxG_data)[30] <- "time_elapsed"
-colnames(confluency_sytoxG_data)[31] <- "phenotype_value"
+confluency_sytoxG_data <- melt(confluency_sytoxG_data, id=(colnames(confluency_sytoxG_data)[c(1:17,42:ncol(confluency_sytoxG_data))]), measure.vars=(colnames(confluency_sytoxG_data)[18:41]))
+colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "variable"] <- "time_elapsed"
+colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "value"] <- "phenotype_value"
 
 #convert factor to int for time_elapsed column
 confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed))
@@ -120,6 +134,14 @@ confluency_sytoxG_data <- tbl_df(confluency_sytoxG_data)
 #arrange by compound name, time elapsed
 confluency_sytoxG_data <- confluency_sytoxG_data %>%
   arrange(Compound, phenotypic_Marker, time_elapsed)
+
+#get separated data into sytoxG and confluency
+sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Sytox Green")
+confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Confluency")
+
+#get features
+sytoxG_data_features <- get_features(sytoxG_data)
+confluency_data_features <- get_features(confluency_data)
 
 
 # CAUSES FATAL ERROR IN IRMACS...

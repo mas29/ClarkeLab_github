@@ -348,3 +348,54 @@ ggplot(sytoxG_mean_sd_empty,
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 
+
+
+#background continous according
+#@param fill_by -- feature of dataset to fill by
+#@param fill_legend_title -- name of feature of dataset for fill
+plot_sparklines_fill <- function(fill_by, fill_legend_title) {
+  localenv <- environment()
+  ggplot(sm_ds, 
+         aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+             group=Compound), environment = localenv ) +
+    geom_rect(data = sm_ds, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = fill_by), alpha = 0.4) +
+    geom_line() +
+    scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                         midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+    xlab("Time Elapsed") +
+    ylab("Sytox Green") +
+    ggtitle("Sytox Green - Muscle Cells Over Time") +
+    facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+    labs(fill = fill_legend_title) +
+    theme(panel.grid = element_blank(),
+          strip.text=element_blank(),
+          axis.text = element_blank(),
+          axis.ticks.length = unit(0, "cm"),
+          legend.key.height = unit(.85, "cm"),
+          panel.background = element_rect(fill = "white"),
+          panel.margin = unit(.085, "cm"),
+          strip.background = element_rect(fill = "white"))
+}
+
+plot_sparklines_fill(delta_min_max, "Delta (max-min)")
+plot_sparklines_fill(sytoxG_data$AUC_trapezoidal_integration, "AUC trapezoidal integration")
+
+#sytoxG sparklines - free scale - lines coloured by delta max-min
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound, colour = as.numeric(delta_min_max))) +
+  geom_line() +
+  scale_color_gradient(low="black", high="red") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 44, scales = "free") +
+  labs(color = "Delta (max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        strip.background = element_rect(fill = "white"))

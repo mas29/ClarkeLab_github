@@ -9,19 +9,11 @@ library(plyr)
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 # dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
-# COMMENTED OUT because IRMACS fatal error with saving this object
-# #load dataset
-# load(paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+##load datasets
 
-sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Sytox Green")
-confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Confluency")
-
-# add negative control (T/F) 
-sytoxG_data <- transform(sytoxG_data, empty = grepl("Empty", sytoxG_data$Compound))
 sm_ds <- sytoxG_data[1:2408,]
 
-
-#sytoxG sparklines - fixed scale - lines coloured by delta max-min
+#sytoxG sparklines - lines coloured by delta max-min
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound, colour = as.numeric(delta_min_max))) +
@@ -41,17 +33,19 @@ ggplot(sytoxG_data,
         panel.margin = unit(.085, "cm"),
         strip.background = element_rect(fill = "white"))
 
-#sytoxG sparklines - free scale - lines coloured by delta max-min
+#sytoxG sparklines - fill coloured by delta max-min
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
-           group=Compound, colour = as.numeric(delta_min_max))) +
+           group=Compound)) +
+  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
   geom_line() +
-  scale_color_gradient(low="black", high="red") +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle("Sytox Green - Muscle Cells Over Time") +
-  facet_wrap(~ Compound, ncol = 44, scales = "free") +
-  labs(color = "Delta (max-min)") +
+  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+  labs(fill = "Delta (max-min)") +
   theme(panel.grid = element_blank(),
         strip.text=element_blank(),
         axis.text = element_blank(),
@@ -61,6 +55,27 @@ ggplot(sytoxG_data,
         panel.margin = unit(.085, "cm"),
         strip.background = element_rect(fill = "white"))
 
+#sytoxG sparklines - fill coloured by AUC trapezoidal integration
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound)) +
+  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = AUC_trapezoidal_integration), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+  labs(fill = "AUC trapezoidal integration") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        strip.background = element_rect(fill = "white"))
 
 #sytoxG sparklines, faceted by time to most positive slope, time to max
 ggplot(sytoxG_data, 
@@ -152,36 +167,11 @@ ggplot(sytoxG_mean_sd_empty,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 
 
-#background continous according to delta
-ggplot(sytoxG_data, 
-       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
-           group=Compound)) +
-  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
-  geom_line() +
-  scale_fill_gradient2(low = "red", mid = "white", high = "red",
-                         midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
-  xlab("Time Elapsed") +
-  ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time") +
-  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
-  labs(fill = "Delta (max-min)") +
-  theme(panel.grid = element_blank(),
-        strip.text=element_blank(),
-        axis.text = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        legend.key.height = unit(.85, "cm"),
-        panel.background = element_rect(fill = "white"),
-        panel.margin = unit(.085, "cm"),
-        strip.background = element_rect(fill = "white"))
+
+
 
 
 #stripplot for deltas in different pathways & targets
-sytoxG_data_features <- sytoxG_data %>%
-  select(Compound, Catalog.No., Rack.Number, M.w., CAS.Number, Form, Targets, Information, Smiles, Max.Solubility.in.DMSO..mM.,
-         URL, Pathway, Plate, Position, Screen, phenotypic_Marker, Elapsed, mean, min, max, AUC_trapezoidal_integration, time_to_max,
-         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope, most_negative_slope, 
-         time_to_most_negative_slope) %>%
-  distinct()
 
 ggplot(sytoxG_data_features, aes(delta_min_max, Pathway)) + 
   geom_point()
