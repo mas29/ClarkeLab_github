@@ -11,6 +11,7 @@ require(pracma)
 library(dplyr)
 library(tidyr)
 library(reshape)
+library(car)
 
 #set parameters - various files
 #dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -72,6 +73,7 @@ add_metrics <- function(df, start, end, time_elapsed) {
   df$most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[3]))
   df$time_to_most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[4]))
   df$empty <- apply(df, 1, function(x) (grepl("Empty", x[1])))#negative control (T/F) 
+  df$empty <- recode(df$empty, "'TRUE'=Negative Control; 'FALSE'=Treatment", as.factor.result = TRUE)
   return(df)
 }
 
@@ -81,7 +83,7 @@ add_metrics <- function(df, start, end, time_elapsed) {
 #@param df -- data frame as tbl_df
 get_features <- function(df) {
   df <- df %>%
-    select(Compound, Catalog.No., Rack.Number, M.w., CAS.Number, Form, Targets, Information, Smiles, Max.Solubility.in.DMSO..mM.,
+    select(Compound, Catalog.No., Rack.Number, M.w., CAS.Number, Form, Targets, Information, Smiles, Max.Solubility.in.DMSO,
            URL, Pathway, Plate, Position, Screen, phenotypic_Marker, Elapsed, mean, min, max, AUC_trapezoidal_integration, time_to_max,
            time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope, most_negative_slope, 
            time_to_most_negative_slope, empty) %>%
@@ -92,11 +94,12 @@ get_features <- function(df) {
 
 #END FUNCTIONS
 
-#load toXL, which is all the data from 1833 compounds, created by the Reconfigure_dc.R script
+# load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
+# created by the _____ script
 #!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-load(paste(dir,"Files/1421981517_326__incucyte-c2c12%252Bdiff%252Btun.RData",sep=""))
+confluency_sytoxG_data <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
+                                   check.names=F, row.names=1)
 
-confluency_sytoxG_data <- toXL
 confluency_data <- confluency_sytoxG_data[,c(1:42)]
 sytoxG_data <- confluency_sytoxG_data[,c(1:15,43:ncol(confluency_sytoxG_data))]
 confluency_sytoxG_data <- rbind(confluency_data,sytoxG_data)
@@ -105,16 +108,10 @@ confluency_sytoxG_data$Compound <- as.character(confluency_sytoxG_data$Compound)
 confluency_sytoxG_data[which(confluency_sytoxG_data$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
   with(confluency_sytoxG_data, paste(Compound, Plate, Position, sep = "_"))[which(confluency_sytoxG_data$Compound == "Empty")]
 
-###### THE DATA IS WRONGLY input for toXL? ????????????????? ##############
-
-#convert factor to double for phenotypic marker value columns
-for (i in 18:41) {
-  confluency_sytoxG_data[,i] <- as.numeric(as.character(confluency_sytoxG_data[,i]))
-}
-
 #fill in NA values with na value specified (0.23, or 1/4 of a cell)
 confluency_sytoxG_data[18:41][is.na(confluency_sytoxG_data[18:41])] <- na_value
 
+### There are some strange characters in the Compound names, explaining error for add_metrics ###
 #add metrics
 confluency_sytoxG_data <- add_metrics(confluency_sytoxG_data, 18, 41, time_elapsed)
 
@@ -123,7 +120,7 @@ confluency_sytoxG_data <- melt(confluency_sytoxG_data, id=(colnames(confluency_s
 colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "variable"] <- "time_elapsed"
 colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "value"] <- "phenotype_value"
 
-#convert factor to int for time_elapsed column
+#convert factor to number for time_elapsed column
 confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed))
 
 #add drugbank data??
@@ -136,8 +133,8 @@ confluency_sytoxG_data <- confluency_sytoxG_data %>%
   arrange(Compound, phenotypic_Marker, time_elapsed)
 
 #get separated data into sytoxG and confluency
-sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Sytox Green")
-confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Confluency")
+sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "SG")
+confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Con")
 
 #get features
 sytoxG_data_features <- get_features(sytoxG_data)

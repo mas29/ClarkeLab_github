@@ -430,3 +430,9 @@ py$ggplotly(a, kwargs=list(world_readable=FALSE))
 url<-"https://plot.ly/~mas29/68/pathway-vs-delta-min-max/" 
 plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
                        "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
+
+#convert factor to double for phenotypic marker value columns
+for (i in 18:41) {
+  confluency_sytoxG_data[,i] <- as.numeric(as.character(confluency_sytoxG_data[,i]))
+}
+

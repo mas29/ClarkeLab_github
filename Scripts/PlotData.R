@@ -4,7 +4,7 @@
 # install.packages("grid")
 # install.packages("plyr")
 library(ggplot2)
-library("grid")
+library(grid)
 library(plyr)
 
 #set paths
@@ -21,8 +21,12 @@ sm_ds <- sytoxG_data[1:2408,]
 
 #stripplot for deltas in different pathways & targets
 
-ggplot(sytoxG_data_features, aes(delta_min_max, Pathway)) + 
-  geom_point()
+plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
 ggplot(sytoxG_data_features, aes(max, Pathway)) + 
   geom_point()
 ggplot(sytoxG_data_features, aes(min, Pathway)) + 
