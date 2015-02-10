@@ -399,3 +399,34 @@ ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"),
         panel.margin = unit(.085, "cm"),
         strip.background = element_rect(fill = "white"))
+
+
+install.packages("devtools")
+install_github("plotly", "ropensci")
+```{r}
+
+library(knitr)
+library(devtools)
+library(plotly)
+library(ggplot2)
+
+py <- plotly("mas29", "8s6jru0os3")
+url<-"https://plot.ly/~mas29/47/pathway-vs-delta-min-max/" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' src='", url, 
+                       "/650/800' width='650' height='800'></iframe></center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, plotly=TRUE}
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+load(paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+a <- ggplot(sytoxG_data_features, aes(delta_min_max, Pathway, text=Compound)) + 
+  geom_point()
+
+py$ggplotly(a, kwargs=list(world_readable=FALSE))
+```
+
+
+url<-"https://plot.ly/~mas29/68/pathway-vs-delta-min-max/" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+                       "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
