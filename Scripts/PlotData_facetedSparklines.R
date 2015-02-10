@@ -81,3 +81,18 @@ ggplot(transform(sytoxG_data, max_cut = cut(max, seq(floor(min(max)),ceiling(max
         axis.text = element_blank(), 
         strip.text.x = element_text(size=4, angle=75),
         strip.text.y = element_text(size=8))
+
+#sytoxG sparklines, faceted by pathway
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+           text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Facets: Pathway") +
+  facet_grid(~Pathway, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4, angle=75),
+        axis.text.x = element_blank())

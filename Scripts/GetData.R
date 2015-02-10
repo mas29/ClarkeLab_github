@@ -140,14 +140,12 @@ confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Con")
 sytoxG_data_features <- get_features(sytoxG_data)
 confluency_data_features <- get_features(confluency_data)
 
-
-
+#save
 save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
 # CAUSES FATAL ERROR... ### save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
 save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
-
 
 #export to tsv
 write.table(confluency_sytoxG_data, file = paste(dir,"DataOutput/confluency_sytoxG_data.tsv",sep=""), 
