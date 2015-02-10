@@ -1,6 +1,6 @@
 install.packages("devtools")
-library(devtools)
 install_github("plotly", "ropensci")
+library(devtools)
 library(plotly)
 library(ggplot2)
 py <- plotly("mas29", "8s6jru0os3")
