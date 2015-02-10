@@ -14,9 +14,9 @@ library(reshape)
 library(car)
 
 #set parameters - various files
-#dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
-dir = "/Users/mas29/Documents/ClarkeLab_github/"
+# dir = "/Users/mas29/Documents/ClarkeLab_github/"
 time_elapsed <- seq(0,46,2)
 na_value <- 0.2320489
 
@@ -73,7 +73,7 @@ add_metrics <- function(df, start, end, time_elapsed) {
   df$most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[3]))
   df$time_to_most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[4]))
   df$empty <- apply(df, 1, function(x) (grepl("Empty", x[1])))#negative control (T/F) 
-  df$empty <- recode(df$empty, "'TRUE'=Negative Control; 'FALSE'=Treatment", as.factor.result = TRUE)
+  df$empty <- recode(df$empty, "TRUE='Negative Control'; FALSE='Treatment'", as.factor.result = TRUE)
   return(df)
 }
 
