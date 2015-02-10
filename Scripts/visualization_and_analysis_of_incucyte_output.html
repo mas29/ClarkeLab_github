@@ -58,9 +58,20 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<pre class="r"><code>url&lt;-&quot;https://plot.ly/~mas29/47/pathway-vs-delta-min-max/&quot; 
+<pre class="r"><code>library(devtools)</code></pre>
+<pre><code>## Warning: package 'devtools' was built under R version 3.1.2</code></pre>
+<pre class="r"><code>library(plotly)</code></pre>
+<pre><code>## Loading required package: RCurl
+## Loading required package: bitops
+## Loading required package: RJSONIO
+## Loading required package: ggplot2</code></pre>
+<pre class="r"><code>library(ggplot2)
+py &lt;- plotly(&quot;mas29&quot;, &quot;8s6jru0os3&quot;)
+url&lt;-&quot;https://plot.ly/~mas29/47/pathway-vs-delta-min-max/&quot; 
 plotly_iframe &lt;- paste(&quot;&lt;center&gt;&lt;iframe scrolling='no' seamless='seamless' src='&quot;, url, 
-                       &quot;/650/800' width='650' height='800'&gt;&lt;/iframe&gt;&lt;/center&gt;&quot;, sep = &quot;&quot;)</code></pre>
+                       &quot;/650/800' width='650' height='800'&gt;&lt;/iframe&gt;&lt;/center&gt;&quot;, sep = &quot;&quot;)
+plotly_iframe</code></pre>
+<pre><code>## [1] &quot;&lt;center&gt;&lt;iframe scrolling='no' seamless='seamless' src='https://plot.ly/~mas29/47/pathway-vs-delta-min-max//650/800' width='650' height='800'&gt;&lt;/iframe&gt;&lt;/center&gt;&quot;</code></pre>
 
 
 </div>
