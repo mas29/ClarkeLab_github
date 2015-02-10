@@ -145,7 +145,10 @@ confluency_data_features <- get_features(confluency_data)
 
 
 # CAUSES FATAL ERROR IN IRMACS...
-# #save
+# save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+# save(confluency_data, file=paste(dir,"DataObjects/confluency_data",sep=""))
+# save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features",sep=""))
+# save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features",sep=""))
 # save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 
 

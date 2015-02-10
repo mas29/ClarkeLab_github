@@ -12,6 +12,7 @@ dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 # dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
 ##load datasets
+# load(paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 
 sm_ds <- sytoxG_data[1:2408,]
 

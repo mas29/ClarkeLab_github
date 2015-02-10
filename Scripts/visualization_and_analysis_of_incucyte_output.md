@@ -1,0 +1,11 @@
+# Visualization and Analysis of IncuCyte Output
+Maia Smith  
+February 9, 2015  
+
+
+```r
+url<-"https://plot.ly/~mas29/47/pathway-vs-delta-min-max/" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' src='", url, 
+                       "/650/800' width='650' height='800'></iframe></center>", sep = "")
+```
+
