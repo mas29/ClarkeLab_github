@@ -4,7 +4,10 @@ February 9, 2015
 
 
 ```r
-library("knitr")
+library(ggplot2)
+library(grid)
+library(plyr)
+library(knitr)
 ```
 
 ```
@@ -12,7 +15,7 @@ library("knitr")
 ```
 
 ```r
-library("devtools")
+library(devtools)
 ```
 
 ```
@@ -20,9 +23,30 @@ library("devtools")
 ```
 
 ```r
-url<-"https://plot.ly/~mas29/68/pathway-vs-delta-min-max" 
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
-    "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
+load(file="/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data.R")
 ```
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/68/pathway-vs-delta-min-max/800/1200' width='800' height='1200'></iframe><center>
+Quality Control
+=============
 
+Compare plates for all data (controls and treatments)
+-----------------------------------------------
+
+![](./visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-2-1.png) 
+
+Compare controls and treatments
+-----------------------------------------------
+
+![](./visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-3-1.png) 
+
+Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
+-----------------------------------------------
+
+![](./visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-4-1.png) 
+
+
+
+
+<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/100/delta-max-min-vs-pathway.embed?width=550&height=550/800/1200' width='800' height='1200'></iframe><center>
+
+
+<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/81/sytox-green-muscle-cells-over-time.embed?width=550&height=550/800/1200' width='800' height='1200'></iframe><center>

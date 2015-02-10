@@ -8,12 +8,87 @@ output:
 ---
 
 ```{r}
-library("knitr")
-library("devtools")
-url<-"https://plot.ly/~mas29/68/pathway-vs-delta-min-max.embed?width=550&height=550" 
+library(ggplot2)
+library(grid)
+library(plyr)
+library(knitr)
+library(devtools)
+library(car)
+load(file="/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data.R")
+```
+Quality Control
+=============
+
+Compare plates for controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# compare sytoxG sparklines, faceted by plates, empty
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+Compare controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# plot sparklines for negative controls vs others
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound, Plate)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+```
+
+Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
+-----------------------------------------------
+
+```{r, echo=FALSE}
+#sytoxG - calculate mean and sd values for each plate, empty vs not empty
+sytoxG_mean_sd_empty <- ddply(sytoxG_data, ~ Plate * time_elapsed * empty, summarize,
+                              mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#sytoxG - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean & SD") +
+  ggtitle("Sytox Green\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+```
+
+
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/100/delta-max-min-vs-pathway.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
+ 
+```
+`r I(plotly_iframe)`
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/81/sytox-green-muscle-cells-over-time.embed?width=550&height=550" 
 plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
     "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
  
 ```
 `r I(plotly_iframe)`
-
