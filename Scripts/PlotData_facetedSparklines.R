@@ -96,3 +96,26 @@ ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4, angle=75),
         axis.text.x = element_blank())
+
+#sytoxG coloured by target
+
+#in order to filter down some of the data, I remove those compounds with maxima smaller than 
+#or equal to the largest of the maxima for the negative controls
+max_of_negative_controls_max <- max(sytoxG_data[sytoxG_data$empty=="Negative Control",]$max)
+sytoxG_data_max_greater_than_neg_controls <- sytoxG_data %>%
+  filter(max > max_of_negative_controls_max) %>%
+  droplevels()
+  
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+           text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green") +
+  facet_wrap(~Targets, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text.x = element_blank())
