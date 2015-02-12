@@ -41,25 +41,26 @@ Compare controls and treatments
 -----------------------------------------------
 
 
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/105/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
+<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/144/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
 
 
 Compare plates for controls and treatments
 -----------------------------------------------
 
-![](./visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-3-1.png) 
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-3-1.png) 
 
 Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
 -----------------------------------------------
 
-![](./visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-4-1.png) 
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-4-1.png) 
 
 Individual sparklines for each compound
 -----------------------------------------------
 
-# ```{r setup}
-opts_chunk$set(dev = 'pdf')
-opts_chunk$set(out.width='3000px', dpi=800)
+![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
+
+
+# ```{r}
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound, text=Compound)) +
@@ -79,18 +80,19 @@ ggplot(sytoxG_data,
         legend.key.height = unit(.85, "cm"),
         panel.background = element_rect(fill = "white"),
         panel.margin = unit(.085, "cm"))
-# ```
+#```
 
 Pathway analysis 
 ================
 
 Sparklines by Pathway
------------------------------------------------
+------------------------
 
 
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/124/sytox-green-facets-pathway.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
+<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/161/sytox-green-facets-pathway.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
 
 Delta (max-min) values by Pathway
+----------------------------------
 
 
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/100/delta-max-min-vs-pathway.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
+<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/136/none.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>

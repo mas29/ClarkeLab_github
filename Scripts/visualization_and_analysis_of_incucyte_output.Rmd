@@ -24,7 +24,7 @@ Compare controls and treatments
 -----------------------------------------------
 
 ```{r, echo=FALSE}
-url<-"https://plot.ly/~mas29/105/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550" 
+url<-"https://plot.ly/~mas29/144/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550" 
 plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
     "/800/1200' width='800' height='800'></iframe><center>", sep = "")
 ```
@@ -72,9 +72,13 @@ ggplot(sytoxG_mean_sd_empty,
 Individual sparklines for each compound
 -----------------------------------------------
 
-# ```{r setup}
+![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
+
+```{r setup, include=FALSE}
 opts_chunk$set(dev = 'pdf')
 opts_chunk$set(out.width='3000px', dpi=800)
+```
+# ```{r}
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound, text=Compound)) +
@@ -94,7 +98,7 @@ ggplot(sytoxG_data,
         legend.key.height = unit(.85, "cm"),
         panel.background = element_rect(fill = "white"),
         panel.margin = unit(.085, "cm"))
-# ```
+#```
 
 Pathway analysis 
 ================
@@ -103,7 +107,7 @@ Sparklines by Pathway
 ------------------------
 
 ```{r, echo=FALSE}
-url<-"https://plot.ly/~mas29/124/sytox-green-facets-pathway.embed?width=550&height=550" 
+url<-"https://plot.ly/~mas29/161/sytox-green-facets-pathway.embed?width=550&height=550" 
 plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
  
 ```
@@ -113,7 +117,7 @@ Delta (max-min) values by Pathway
 ----------------------------------
 
 ```{r, echo=FALSE}
-url<-"https://plot.ly/~mas29/100/delta-max-min-vs-pathway.embed?width=550&height=550" 
+url<-"https://plot.ly/~mas29/136/none.embed?width=550&height=550" 
 plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
  
 ```
