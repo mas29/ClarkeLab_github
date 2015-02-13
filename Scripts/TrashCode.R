@@ -436,3 +436,50 @@ for (i in 18:41) {
   confluency_sytoxG_data[,i] <- as.numeric(as.character(confluency_sytoxG_data[,i]))
 }
 
+#fill in NA values with na value specified (0.23, or 1/4 of a cell)
+confluency_sytoxG_data[18:41][is.na(confluency_sytoxG_data[18:41])] <- na_value
+
+# load source to GetData.R
+source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
+
+# load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
+# created by the _____ script
+#!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
+df <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
+               check.names=F, row.names=1)
+
+# preliminary processing on data
+df <- preliminary_processing(df)
+
+
+# load sytoxG_data file
+load("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data.R")
+
+# data for curve metrics calculations
+sytoxG_curve_metrics <- sytoxG_data
+
+# work with the first compound
+compound1 <- sytoxG_curve_metrics[1:24,]
+
+#fit first degree polynomial equation:
+fit1 <- lm(formula = phenotype_value ~ time_elapsed, data = compound1)
+#second degree
+fit2 <- lm(formula = phenotype_value~poly(time_elapsed,2,raw=TRUE), data = compound1)
+#third degree
+fit3 <- lm(formula = phenotype_value~poly(time_elapsed,3,raw=TRUE), data = compound1)
+#fourth degree
+fit4 <- lm(formula = phenotype_value~poly(time_elapsed,4,raw=TRUE), data = compound1)
+#fifth degree
+fit5 <- lm(formula = phenotype_value~poly(time_elapsed,5,raw=TRUE), data = compound1)
+
+#check the significance of the bigger model
+anova(fit4,fit5)
+
+#generate 24 numbers over the range [0,46]
+xx <- seq(0,46, length=24)
+plot(compound1$time_elapsed, compound1$phenotype_value, pch=19)
+lines(xx, predict(fit1, data.frame(x=xx)), col="red")
+lines(xx, predict(fit2, data.frame(x=xx)), col="green")
+lines(xx, predict(fit3, data.frame(x=xx)), col="blue")
+lines(xx, predict(fit4, data.frame(x=xx)), col="purple")
+lines(xx, predict(fit5, data.frame(x=xx)), col="pink")

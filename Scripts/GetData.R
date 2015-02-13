@@ -22,6 +22,20 @@ na_value <- 0.2320489
 
 #FUNCTIONS
 
+#function to get the data formatted correctly, replace individual na_values, remove entirely NA rows, and other preliminary processing
+preliminary_processing <- function(df) {
+  confluency_data <- df[,c(1:42)]
+  sytoxG_data <- df[,c(1:15,43:ncol(df))]
+  df <- rbind(confluency_data,sytoxG_data)
+  df <- df[,colSums(is.na(df))<nrow(df)] #remove columns where ALL values are NA
+  df$Compound <- as.character(df$Compound) #required for changing Empty compound names to include plate & position
+  df[which(df$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
+    with(df, paste(Compound, Plate, Position, sep = "_"))[which(df$Compound == "Empty")]
+  df[18:41][is.na(df[18:41])] <- na_value #fill in NA values with na value specified (0.23, or 1/4 of a cell)
+  return(df)
+}
+
+
 #function to get information (most positive, most negative) about the slopes of the sparklines
 
 #param time_elapsed -- vector of times elapsed in experiment
@@ -94,22 +108,16 @@ get_features <- function(df) {
 
 #END FUNCTIONS
 
+
+
 # load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
 # created by the _____ script
 #!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
 confluency_sytoxG_data <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
                                    check.names=F, row.names=1)
 
-confluency_data <- confluency_sytoxG_data[,c(1:42)]
-sytoxG_data <- confluency_sytoxG_data[,c(1:15,43:ncol(confluency_sytoxG_data))]
-confluency_sytoxG_data <- rbind(confluency_data,sytoxG_data)
-confluency_sytoxG_data <- confluency_sytoxG_data[,colSums(is.na(confluency_sytoxG_data))<nrow(confluency_sytoxG_data)] #remove columns where ALL values are NA
-confluency_sytoxG_data$Compound <- as.character(confluency_sytoxG_data$Compound) #required for changing Empty compound names to include plate & position
-confluency_sytoxG_data[which(confluency_sytoxG_data$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
-  with(confluency_sytoxG_data, paste(Compound, Plate, Position, sep = "_"))[which(confluency_sytoxG_data$Compound == "Empty")]
-
-#fill in NA values with na value specified (0.23, or 1/4 of a cell)
-confluency_sytoxG_data[18:41][is.na(confluency_sytoxG_data[18:41])] <- na_value
+# preliminary processing on data
+confluency_sytoxG_data <- preliminary_processing(confluency_sytoxG_data)
 
 ### There are some strange characters in the Compound names, explaining error for add_metrics ###
 #add metrics
