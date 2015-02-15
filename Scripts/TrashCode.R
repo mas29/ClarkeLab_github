@@ -483,3 +483,27 @@ lines(xx, predict(fit2, data.frame(x=xx)), col="green")
 lines(xx, predict(fit3, data.frame(x=xx)), col="blue")
 lines(xx, predict(fit4, data.frame(x=xx)), col="purple")
 lines(xx, predict(fit5, data.frame(x=xx)), col="pink")
+
+
+# SG <- SG %>%
+#   arrange(Pathway)
+
+# (p <- ggplot(SG, aes(time_elapsed, Targets, color = Pathway)) + 
+#    geom_tile(aes(fill = mean_value_for_target)))
+#  
+#  (p <- ggplot(SG, aes(time_elapsed, Targets, color = Pathway)) + 
+#     geom_point(aes(size = mean_value_for_target)) +
+#     theme(panel.grid = element_blank(),
+#           panel.background = element_rect(fill = "white")))
+
+# SG_for_heatmap <- dcast(SG,Targets + Pathway ~ time_elapsed)
+# SG_for_heatmap_values <- as.matrix(SG_for_heatmap[,c(-1,-2)])
+#   
+# #cluster
+# distance = dist(SG_for_heatmap_values, method = "euclidean")
+# cluster = hclust(distance, method = "ward.D")
+# 
+# heatmap(
+#   SG_for_heatmap_values, Rowv=as.dendrogram(cluster),
+#   Colv=NA
+# )

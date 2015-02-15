@@ -113,15 +113,15 @@ get_features <- function(df) {
 # load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
 # created by the _____ script
 #!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-confluency_sytoxG_data <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
+data_from_reconfigure <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
                                    check.names=F, row.names=1)
 
 # preliminary processing on data
-confluency_sytoxG_data <- preliminary_processing(confluency_sytoxG_data)
-
+confluency_sytoxG_data_prelim_proc <- preliminary_processing(data_from_reconfigure)
+  
 ### There are some strange characters in the Compound names, explaining error for add_metrics ###
 #add metrics
-confluency_sytoxG_data <- add_metrics(confluency_sytoxG_data, 18, 41, time_elapsed)
+confluency_sytoxG_data <- add_metrics(confluency_sytoxG_data_prelim_proc, 18, 41, time_elapsed)
 
 #reshape for data vis 
 confluency_sytoxG_data <- melt(confluency_sytoxG_data, id=(colnames(confluency_sytoxG_data)[c(1:17,42:ncol(confluency_sytoxG_data))]), measure.vars=(colnames(confluency_sytoxG_data)[18:41]))
@@ -149,6 +149,7 @@ sytoxG_data_features <- get_features(sytoxG_data)
 confluency_data_features <- get_features(confluency_data)
 
 #save
+save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
 save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
 # CAUSES FATAL ERROR... ### save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))

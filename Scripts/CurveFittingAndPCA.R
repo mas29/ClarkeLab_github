@@ -2,17 +2,12 @@
 # With help from http://davetang.org/muse/2013/05/09/on-curve-fitting/
 library(dplyr)
 
-# load source to GetData.R
-source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
-
-# load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
-# created by the _____ script
-#!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-df <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
-               check.names=F, row.names=1)
-
-# preliminary processing on data
-df <- preliminary_processing(df)
+# load the preliminarily processed data 
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+# dir = "/Users/mas29/Documents/ClarkeLab_github/"
+load(paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
+df <- confluency_sytoxG_data_prelim_proc
 
 # work with the first compound
 time_elapsed <- seq(0,46,2)
