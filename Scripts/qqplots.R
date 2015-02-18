@@ -1,7 +1,10 @@
-max <- scale(sytoxG_data_features$max)
-qqnorm(max)
-residuals(qqnorm(max))
-qqPlot(max)
+delta_max_min <- scale(sytoxG_data_features$delta_min_max)
+qqnorm(delta_max_min, main="Normal Q-Q Plot for Sytox Green Delta (delta_max_min-min)")
+delta_max_min <- scale(confluency_data_features$delta_min_max)
+qqnorm(delta_max_min, main="Normal Q-Q Plot for Confluency Delta (delta_max_min-min)")
+
+residuals(qqnorm(delta_max_min))
+qqPlot(delta_max_min)
 
 
 

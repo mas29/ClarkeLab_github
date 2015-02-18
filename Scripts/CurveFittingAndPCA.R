@@ -1,15 +1,90 @@
 # Getting features of curves, then performing PCA on them.
 # With help from http://davetang.org/muse/2013/05/09/on-curve-fitting/
 library(dplyr)
+library(ggbiplot)
+### FUNCTIONS ###
+
+# Function to perform PCA. Takes in the data, the groups to identify in PCA, and any other features of the graph.
+
+perform_PCA <- function(data, groups, ...) {
+  # PCA
+  pca <- prcomp(data, center = TRUE, scale. = TRUE) 
+  
+  # Standard deviations for each PC
+  print(pca)
+  
+  # A plot of the variances associated with each PC. 
+  plot(pca, type = "l")
+  
+  # The importance of each PC
+  # 1st row -- standard deviation associated with each PC. 
+  # 2nd row -- proportion of the variance explained by each PC 
+  # 3rd row -- cumulative proportion of explained variance
+  print(summary(pca))
+  
+  # Plot.
+  g <- ggbiplot(pca, obs.scale = 1, var.scale = 1, 
+                groups = pathways, ellipse = TRUE, 
+                circle = TRUE, ...)
+  g <- g + scale_color_discrete(name = '')
+  g <- g + theme(legend.direction = 'horizontal', 
+                 legend.position = 'top')
+  print(g)
+  
+  # Send to plotly.
+  # py$ggplotly(g, kwargs=list(world_readable=FALSE))
+}
+
+# Function to get data for a specific phenotypic marker (input String: marker), and perform PCA.
+# Input df is the df created from preliminary processing in the GetData script.
+
+PCA_on_selected_marker <- function(df, marker) {
+  
+  # Get data for selected marker.
+  df_marker <- df %>%
+    filter(phenotypic_Marker == marker) 
+  
+  targets <- df_marker$Targets
+  pathways <- df_marker$Pathway
+  plates <- as.factor(df_marker$Plate)
+  
+  data_marker_for_pca <- as.data.frame(df_marker %>%
+                                         select(intercept, coef1, coef2, coef3, coef4))
+  
+  #### MERGE WITH OTHER FEATURES, PCA AGAIN ####
+  
+  marker_features <- merge(df_marker[,c(1,18:ncol(df_marker))], sytoxG_data_features, by="Compound")
+  
+  targets <- marker_features$Targets
+  pathways <- marker_features$Pathway
+  plates <- as.factor(marker_features$Plate)
+  
+  columns_for_pca <- colnames(marker_features)[c(2:30,47:58)]
+  data_marker_for_pca_more_features <- marker_features[,columns_for_pca]
+  
+  # Perform PCA for marker data (features: regression coefficients)
+  
+  perform_PCA(data_marker_for_pca, pathways)
+  perform_PCA(data_marker_for_pca, plates)
+  perform_PCA(data_marker_for_pca, targets)
+  
+  # Perform PCA for marker data (features: regression + other coefficients)
+  perform_PCA(data_marker_for_pca_more_features, choices = c(1,2))
+}
+
+### END FUNCTIONS ###
 
 # load the preliminarily processed data 
+
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
 # dir = "/Users/mas29/Documents/ClarkeLab_github/"
 load(paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
+load(paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 df <- confluency_sytoxG_data_prelim_proc
 
 # work with the first compound
+
 time_elapsed <- seq(0,46,2)
 whichCompound <- 1
 phenotype_values <- unlist(df[whichCompound,18:41])
@@ -57,102 +132,8 @@ df$coef4 <- apply(df, 1, function(x) {fit_fourth_degree_polynomial(x)[5]})
 
 df <- tbl_df(df)
 
-# SG ONLY!
-df_SG <- df %>%
-  filter(phenotypic_Marker == "SG") 
-
-data_SG_for_pca <- df_SG %>%
-  select(intercept, coef1, coef2, coef3, coef4) 
-
-data_SG_for_pca <- as.data.frame(data_SG_for_pca)
-
-targets <- df_SG$Targets
-
-pathways <- df_SG$Pathway
-
-plates <- as.factor(df_SG$Plate)
-
-# # # log transform  BUT what to do with negatives...
-# log_data_SG_for_pca <- log(data_SG_for_pca)
-
-# PCA
-pca <- prcomp(data_SG_for_pca, center = TRUE, scale. = TRUE) 
-
-# Standard deviations for each PC
-print(pca)
-
-# A plot of the variances associated with each PC. 
-plot(pca, type = "l")
-
-# The importance of each PC
-# 1st row -- standard deviation associated with each PC. 
-# 2nd row -- proportion of the variance explained by each PC 
-# 3rd row -- cumulative proportion of explained variance
-summary(pca)
-
-### add curve fits values...?
-
-
-g <- ggbiplot(pca, obs.scale = 1, var.scale = 1, 
-              groups = pathways, ellipse = TRUE, 
-              circle = TRUE)
-g <- g + scale_color_discrete(name = '')
-g <- g + theme(legend.direction = 'horizontal', 
-               legend.position = 'top')
-print(g)
-
-py$ggplotly(g, kwargs=list(world_readable=FALSE))
-
-#### MERGE WITH OTHER FEATURES, PCA AGAIN ####
-
-sytoxG_data_features_w_regression_coefs <- merge(df_SG[,c(1,18:ncol(df_SG))], sytoxG_data_features, by="Compound")
-
-sytoxG_data_features_w_regression_coefs_treatment_only <- sytoxG_data_features_w_regression_coefs %>%
-  filter(empty == "Treatment")
-
-data_for_pca <- sytoxG_data_features_w_regression_coefs_treatment_only %>%
-  select(intercept, coef1, coef2, coef3, coef4,
-         M.w., Max.Solubility.in.DMSO, mean, min, max, AUC_trapezoidal_integration, time_to_max, 
-         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope,
-         most_negative_slope, time_to_most_negative_slope) 
-
-sytoxG_data_features_w_regression_coefs_treatment_only <- as.data.frame(sytoxG_data_features_w_regression_coefs_treatment_only)
-
-targets <- sytoxG_data_features_w_regression_coefs_treatment_only$Targets
-
-pathways <- sytoxG_data_features_w_regression_coefs_treatment_only$Pathway
-
-plates <- as.factor(sytoxG_data_features_w_regression_coefs_treatment_only$Plate)
-
-# # # log transform  BUT what to do with negatives...
-# log_data_for_pca <- log(data_for_pca)
-
-# PCA
-pca <- prcomp(data_for_pca, center = TRUE, scale. = TRUE) 
-
-# Standard deviations for each PC
-print(pca)
-
-# A plot of the variances associated with each PC. 
-plot(pca, type = "l")
-
-# The importance of each PC
-# 1st row -- standard deviation associated with each PC. 
-# 2nd row -- proportion of the variance explained by each PC 
-# 3rd row -- cumulative proportion of explained variance
-summary(pca)
-
-### add curve fits values...?
-
-
-g <- ggbiplot(pca, choices = c(2,3), obs.scale = 1, var.scale = 1, 
-              groups = pathways, ellipse = TRUE, 
-              circle = TRUE)
-g <- g + scale_color_discrete(name = '')
-g <- g + theme(legend.direction = 'horizontal', 
-               legend.position = 'top')
-print(g)
-py$ggplotly(g, kwargs=list(world_readable=FALSE))
+PCA_on_selected_marker(df, "SG")
+PCA_on_selected_marker(df, "Con")
 
 
 

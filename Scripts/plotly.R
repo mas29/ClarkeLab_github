@@ -7,20 +7,37 @@ library(grid)
 library(plyr)
 py <- plotly("mas29", "8s6jru0os3")
 
-# Delta(max-min) by pathway
+# Load data.
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+load(file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
+load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
+
+# Delta(max-min) by pathway - SG
 plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
   geom_point(alpha=0.4) +
   ylab("Delta (max-min)") +
+  ggtitle("Sytox Green Delta (max-min) by Pathway") +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "white"),
         axis.text.x = element_text(size=6, angle=75))
-py$ggplotly(plot, kwargs=list(world_readable=FALSE, layout=list(hovermode="closest")))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
 
+# Delta(max-min) by pathway - Confluency
+plot <- ggplot(confluency_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  ggtitle("Confluency Delta (max-min) by Pathway") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
 
-# Control vs Treatment, by plate as well
-plot <- ggplot(sytoxG_data, 
-               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound,
-                   group=Compound, Plate)) +
+# Control vs Treatment - SG
+plot <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
@@ -30,9 +47,24 @@ plot <- ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
-py$ggplotly(plot, kwargs=list(world_readable=FALSE))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
 
-#sparklines by pathway
+# Control vs Treatment - Confluency
+plot <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
+
+#sparklines by pathway - SG
 plot <- ggplot(sytoxG_data, 
                aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
                    text=Compound)) +
@@ -45,9 +77,26 @@ plot <- ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4),
-        axis.text.x = element_blank())
-py$ggplotly(plot, kwargs=list(world_readable=FALSE))
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
 
+#sparklines by pathway - Confluency
+plot <- ggplot(confluency_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+                   text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
 
 
 ######## WORKING OUT KINKS ############

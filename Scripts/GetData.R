@@ -32,6 +32,11 @@ preliminary_processing <- function(df) {
   df[which(df$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
     with(df, paste(Compound, Plate, Position, sep = "_"))[which(df$Compound == "Empty")]
   df[18:41][is.na(df[18:41])] <- na_value #fill in NA values with na value specified (0.23, or 1/4 of a cell)
+  # Replace "NA" pathways with "NegControl"
+  df$Pathway <- as.character(df$Pathway)
+  df$Pathway[is.na(df$Pathway)] <- "NegControl"
+  df$Pathway <- as.factor(df$Pathway)
+  df$Pathway <- relevel(df$Pathway, ref = "NegControl")
   return(df)
 }
 

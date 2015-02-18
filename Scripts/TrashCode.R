@@ -507,3 +507,153 @@ lines(xx, predict(fit5, data.frame(x=xx)), col="pink")
 #   SG_for_heatmap_values, Rowv=as.dendrogram(cluster),
 #   Colv=NA
 # )
+
+data_for_pca <- SG_features_treatment_only %>%
+  select(intercept, coef1, coef2, coef3, coef4,
+         M.w., Max.Solubility.in.DMSO, mean, min, max, AUC_trapezoidal_integration, time_to_max, 
+         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope,
+         most_negative_slope, time_to_most_negative_slope) 
+
+
+# PCA on sytoxG data features 
+# with guidance from http://www.r-bloggers.com/computing-and-visualizing-pca-in-r/
+
+# install.packages("ggbiplot")
+library(dplyr)
+library(devtools)
+library(ggbiplot)
+install_github("ggbiplot", "vqv")
+
+# load data
+load("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data_features.R")
+
+data_for_pca <- sytoxG_data_features %>%
+  select(mean, min, max, AUC_trapezoidal_integration, time_to_max, 
+         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope,
+         most_negative_slope, time_to_most_negative_slope) 
+
+targets <- sytoxG_data_features$Targets
+
+pathways <- sytoxG_data_features$Pathway
+
+plates <- as.factor(sytoxG_data_features$Plate)
+
+# # # log transform  BUT what to do with negatives...
+# log_data_for_pca <- log(data_for_pca)
+
+# PCA
+pca <- prcomp(data_for_pca, center = TRUE, scale. = TRUE) 
+
+# Standard deviations for each PC
+print(pca)
+
+# A plot of the variances associated with each PC. 
+plot(pca, type = "l")
+
+# The importance of each PC
+# 1st row -- standard deviation associated with each PC. 
+# 2nd row -- proportion of the variance explained by each PC 
+# 3rd row -- cumulative proportion of explained variance
+summary(pca)
+
+### add curve fits values...?
+
+
+g <- ggbiplot(pca, obs.scale = 1, var.scale = 1, 
+              groups = pathways, ellipse = TRUE, 
+              circle = TRUE)
+g <- g + scale_color_discrete(name = '')
+g <- g + theme(legend.direction = 'horizontal', 
+               legend.position = 'top')
+print(g)
+py$ggplotly(g, kwargs=list(world_readable=FALSE))
+
+
+
+# Control vs Treatment
+plot <- ggplot(sytoxG_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound,
+                   group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
+url <- response$url
+
+mf_labeller <- function(var, value){
+  value <- as.character(value)
+  if (var=="phenotypic_Marker") { 
+    value[value=="Con"] <- "Confluency"
+    value[value=="SG"]   <- "Sytox Green"
+  }
+  return(value)
+}
+
+
+# Test whether two conditions are significantly different
+is_significant <- function() {
+  # Perform inference for a contrast
+  # The “W” shape of the expression profile for “1438786_a_at” means that the expression 
+  # values for developmental stages P2 and P10 are quite similar. We could formally test 
+  # whether the P2 and P10 effects are equal or, equivalently, whether their difference is 
+  # equal to zero.
+  
+  # First extract the parameter estimates from the linear model you fit above. You did save 
+  # the fit, right? If not, edit your code to do so and re-run that bit. Hint: the coef() 
+  # function will pull parameter estimates out of a wide array of fitted model objects in R.
+  
+  fit_1438786_a_at$coef
+  contMat <- c(0,1,0,-1,0)
+  (obsDiff <- contMat %*% coef(fit_1438786_a_at))
+  
+  # Let’s check that this really is the observed difference in sample mean for the wild type mice, P2 vs. P10.
+  
+  (sampMeans <- aggregate(gExp ~ devStage, mDat, FUN = mean,
+                          subset = gType == "wt"))
+  
+  with(sampMeans, gExp[devStage == "P2"] - gExp[devStage == "P10"])
+  
+  # Yes! Agrees with the observed difference we computed by multiplying our contrast matrix and the 
+  # estimated parameters. If you don’t get agreement, you have a problem … probably with your contrast matrix.
+  # 
+  # Now we need the (estimated) standard error for our contrast. The variance-covariance matrix of the 
+  # parameters estimated in the original model can be obtained with vcov() and is equal to [Math Processing Error].
+  
+  vcov(fit_1438786_a_at)
+  
+  # Let’s check that this is really true. If we take the diagonal elements and take their square root, 
+  # they should be exactly equal to the standard errors reported for out original model. Are they?
+  
+  summary(fit_1438786_a_at)$coefficients[ , "Std. Error"]
+  sqrt(diag(vcov(fit_1438786_a_at)))
+  
+  # Yes! Note for the future that you can get the typical matrix of inferential results from most 
+  # fitted model objects for further computing like so:
+  
+  summary(fit_1438786_a_at)$coefficients
+  
+  # Returning to our test of the P2 vs. P10 contrast, recall that the variance-covariance matrix 
+  # of a contrast obtained as Cα̂  is C(XTX)−1CTσ̂ 2.
+  
+  print(estSe <- t(contMat) %*% vcov(fit_1438786_a_at) %*% contMat)
+  
+  # Test statistic = observed effect divided by its estimated standard error.
+  
+  print(testStat <- obsDiff/estSe)
+  
+  # Compute a two-sided p-value.
+  
+  2 * pt(abs(testStat), df = df.residual(fit_1438786_a_at), lower.tail = FALSE)  
+}
+
+print(with(sampMeans, phenotype_value[time_elapsed == "2"] - phenotype_value[time_elapsed == "0"]))
+
+
+
+
