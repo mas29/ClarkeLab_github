@@ -24,7 +24,7 @@ load(file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
 load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
-load(file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 sm_ds <- sytoxG_data[1:2408,]
 ```
 Quality Control
@@ -287,25 +287,83 @@ At what time point do we see the first significant differences in phenotypic mar
 In Sytox Green?
 
 ```{r, echo=FALSE}
-data_for_stats <- melt(confluency_sytoxG_data_prelim_proc, id=colnames(confluency_sytoxG_data_prelim_proc)[1:17], variable.name="time_elapsed", value.name="phenotype_value")
+data_for_stats <- confluency_sytoxG_data
 
 # At what time point do we see the first significant differences in phenotypic marker values? 
 sig_level <- 0.05
 #  --> For SG? 
-fit_SG <- lm(phenotype_value ~ time_elapsed, data_for_stats, subset = phenotypic_Marker == "SG")
+fit_SG <- lm(phenotype_value ~ as.factor(time_elapsed), data_for_stats, subset = phenotypic_Marker == "SG")
 print(summary(fit_SG))
 summary <- as.data.frame(summary(fit_SG)$coef)
 first_sig_timepoint <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])[2]
-print(paste("The first significant time point for Sytox Green after the hour 0 is hour ",gsub("time_elapsed","",first_sig_timepoint),".",sep=""))
+print(paste("The first significant time point for Sytox Green after the hour 0 is hour ",gsub("as.factor\\(time_elapsed\\)","",first_sig_timepoint),".",sep=""))
 ```
 
 In Confluency?
 
 ```{r, echo=FALSE}
 #  --> For Confluency?
-fit_con <- lm(phenotype_value ~ time_elapsed, data_for_stats, subset = phenotypic_Marker == "Con")
+fit_con <- lm(phenotype_value ~ as.factor(time_elapsed), data_for_stats, subset = phenotypic_Marker == "Con")
 print(summary(fit_con))
 summary <- as.data.frame(summary(fit_con)$coef)
 first_sig_timepoint <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])[2]
-print(paste("The first significant time point for Confluency after the hour 0 is hour ",gsub("time_elapsed","",first_sig_timepoint),".",sep=""))
+print(paste("The first significant time point for Confluency after the hour 0 is hour ",gsub("as.factor\\(time_elapsed\\)","",first_sig_timepoint),".",sep=""))
+```
+
+Which pathways are significantly different from the negative controls (measured by AUC)? 
+------------------
+
+For Sytox Green:
+
+```{r, echo=FALSE}
+# --> SG
+fit_SG <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "SG")
+summary <-  as.data.frame(summary(fit_SG)$coef)
+sig_level <- 0.01
+sig_pathways_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_SG <- gsub("Pathway","",sig_pathways_SG)
+print(paste("The following pathways have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_SG[2:length(sig_pathways_SG)])
+```
+
+For Confluency:
+
+```{r, echo=FALSE} 
+# --> Con
+fit_Con <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "Con")
+summary <-  as.data.frame(summary(fit_Con)$coef)
+sig_level <- 0.01
+sig_pathways_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_Con <- gsub("Pathway","",sig_pathways_Con)
+print(paste("The following pathways have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_Con[2:length(sig_pathways_Con)])
+```
+
+Which targets are significantly different from the negative controls (measured by AUC)?
+------------------------
+
+For Sytox Green:
+
+```{r, echo=FALSE}
+# --> SG
+fit_SG <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "SG")
+summary <-  as.data.frame(summary(fit_SG)$coef)
+sig_level <- 1e-20
+sig_targets_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_targets_SG <- gsub("Targets","",sig_targets_SG)
+print(paste("The following targets have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_targets_SG[2:length(sig_targets_SG)])
+```
+
+For Confluency:
+
+```{r, echo=FALSE}
+# --> Con
+fit_Con <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "Con")
+summary <-  as.data.frame(summary(fit_Con)$coef)
+sig_level <- 1e-20
+sig_targets_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_targets_Con <- gsub("Targets","",sig_targets_Con)
+print(paste("The following targets have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_targets_Con[2:length(sig_targets_Con)])
 ```

@@ -37,6 +37,11 @@ preliminary_processing <- function(df) {
   df$Pathway[is.na(df$Pathway)] <- "NegControl"
   df$Pathway <- as.factor(df$Pathway)
   df$Pathway <- relevel(df$Pathway, ref = "NegControl")
+  # Remove invalid XML characters (ex. "\x95")
+  df$Compound <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Compound) 
+  df$Information <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Information) 
+  df$Pathway <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Pathway) 
+  df$Targets <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Targets) 
   return(df)
 }
 
@@ -157,7 +162,7 @@ confluency_data_features <- get_features(confluency_data)
 save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
 save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
-# CAUSES FATAL ERROR... ### save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
 save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 
