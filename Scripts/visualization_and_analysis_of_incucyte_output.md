@@ -217,15 +217,16 @@ For Sytox Green:
 ```
 
 ```
-##  [1] "Angiogenesis"             "Apoptosis"               
-##  [3] "Cell Cycle"               "Cytoskeletal Signaling"  
-##  [5] "DNA Damage"               "Epigenetics"             
-##  [7] "GPCR &amp; G Protein"     "JAK/STAT"                
-##  [9] "MAPK"                     "Metabolism"              
-## [11] "Neuronal Signaling"       "NF-\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB"
-## [13] "PI3K/Akt/mTOR"            "Protein Tyrosine Kinase" 
-## [15] "Stem Cells &amp;  Wnt"    "TGF-beta/Smad"           
-## [17] "Ubiquitin"
+##  [1] "Apoptosis"                    "Cell Cycle"                  
+##  [3] "DNA Damage"                   "Endocrinology &amp; Hormones"
+##  [5] "GPCR &amp; G Protein"         "JAK/STAT"                    
+##  [7] "MAPK"                         "Metabolism"                  
+##  [9] "Microbiology"                 "NegControl"                  
+## [11] "Neuronal Signaling"           "NF-B"                        
+## [13] "Others"                       "PI3K/Akt/mTOR"               
+## [15] "Proteases"                    "Protein Tyrosine Kinase"     
+## [17] "Stem Cells &amp;  Wnt"        "TGF-beta/Smad"               
+## [19] "Transmembrane Transporters"   "Ubiquitin"
 ```
 
 For Confluency:
@@ -236,17 +237,13 @@ For Confluency:
 ```
 
 ```
-##  [1] "Angiogenesis"                 "Apoptosis"                   
-##  [3] "Cell Cycle"                   "Cytoskeletal Signaling"      
-##  [5] "DNA Damage"                   "Endocrinology &amp; Hormones"
-##  [7] "Epigenetics"                  "GPCR &amp; G Protein"        
-##  [9] "JAK/STAT"                     "MAPK"                        
-## [11] "Metabolism"                   "Microbiology"                
-## [13] "Neuronal Signaling"           "NF-\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB"    
-## [15] "Others"                       "PI3K/Akt/mTOR"               
-## [17] "Proteases"                    "Protein Tyrosine Kinase"     
-## [19] "Stem Cells &amp;  Wnt"        "TGF-beta/Smad"               
-## [21] "Transmembrane Transporters"
+##  [1] "Apoptosis"                    "Cell Cycle"                  
+##  [3] "Endocrinology &amp; Hormones" "Epigenetics"                 
+##  [5] "GPCR &amp; G Protein"         "JAK/STAT"                    
+##  [7] "MAPK"                         "NegControl"                  
+##  [9] "NF-B"                         "Others"                      
+## [11] "PI3K/Akt/mTOR"                "Proteases"                   
+## [13] "Stem Cells &amp;  Wnt"        "Ubiquitin"
 ```
 
 Which targets are significantly different from the negative controls (measured by AUC)?
@@ -260,73 +257,63 @@ For Sytox Green:
 ```
 
 ```
-##  [1] "Akt,mTOR,PI3K"                            
-##  [2] "ATM/ATR,mTOR"                             
-##  [3] "Autophagy,Bcl-2"                          
-##  [4] "Bcl-2,Autophagy"                          
-##  [5] "Bcr-Abl,c-Kit,Src"                        
-##  [6] "c-Met"                                    
-##  [7] "c-RET,FGFR,Bcr-Abl,Aurora Kinase"         
-##  [8] "CDK"                                      
-##  [9] "Chk"                                      
-## [10] "DNA-PK,PDGFR,mTOR"                        
-## [11] "DUB,Bcr-Abl"                              
-## [12] "EGFR"                                     
-## [13] "Epigenetic Reader Domain"                 
-## [14] "HDAC"                                     
-## [15] "HDAC,HER2,EGFR"                           
-## [16] "HER2,VEGFR,EGFR"                          
-## [17] "HSP (e.g. HSP90),Autophagy"               
-## [18] "I\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB/IKK"               
-## [19] "I\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB/IKK,E2 conjugating"
-## [20] "JAK,FLT3,c-RET"                           
-## [21] "JNK"                                      
-## [22] "mTOR,PI3K"                                
-## [23] "PDGFR,FGFR,VEGFR,Bcr-Abl"                 
-## [24] "PI3K,Autophagy,DNA-PK,mTOR"               
-## [25] "PI3K,DNA-PK"                              
-## [26] "PI3K,HDAC"                                
-## [27] "PI3K,mTOR"                                
-## [28] "PKA,CDK,Akt"                              
-## [29] "PKC"                                      
-## [30] "PLK"                                      
-## [31] "Proton Pump"                              
-## [32] "STAT"                                     
-## [33] "Survivin"                                 
-## [34] "Syk"                                      
-## [35] "Topoisomerase"                            
-## [36] "VEGFR,PDGFR,c-Kit"
+##  [1] "Akt,mTOR,PI3K"                    "ATM/ATR,mTOR"                    
+##  [3] "Autophagy,Bcl-2"                  "Bcl-2,Autophagy"                 
+##  [5] "Bcr-Abl,c-Kit,Src"                "c-Met"                           
+##  [7] "c-RET,FGFR,Bcr-Abl,Aurora Kinase" "CDK"                             
+##  [9] "Chk"                              "DNA-PK,PDGFR,mTOR"               
+## [11] "DUB,Bcr-Abl"                      "EGFR"                            
+## [13] "Epigenetic Reader Domain"         "HDAC"                            
+## [15] "HDAC,HER2,EGFR"                   "HER2,VEGFR,EGFR"                 
+## [17] "HSP (e.g. HSP90),Autophagy"       "IB/IKK"                          
+## [19] "IB/IKK,E2 conjugating"            "JAK,FLT3,c-RET"                  
+## [21] "JNK"                              "mTOR,PI3K"                       
+## [23] "PDGFR,FGFR,VEGFR,Bcr-Abl"         "PI3K,Autophagy,DNA-PK,mTOR"      
+## [25] "PI3K,DNA-PK"                      "PI3K,HDAC"                       
+## [27] "PI3K,mTOR"                        "PKA,CDK,Akt"                     
+## [29] "PKC"                              "PLK"                             
+## [31] "Proton Pump"                      "STAT"                            
+## [33] "Survivin"                         "Syk"                             
+## [35] "Topoisomerase"                    "VEGFR,PDGFR,c-Kit"
 ```
+
+Sytox Green sparklines for the significant targets:
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-23-1.pdf" title="" alt="" width="3000px" />
 
 For Confluency:
 
 
 ```
-## [1] "The following targets have an AUC for Sytox Green significantly different (p < 1e-20) from the negative controls' AUC?"
+## [1] "The following targets have an AUC for Confluency significantly different (p < 1e-20) from the negative controls' AUC?"
 ```
 
 ```
-##  [1] "ATPase,Autophagy"                         
-##  [2] "Aurora Kinase,FLT3,VEGFR"                 
-##  [3] "Autophagy,Bcl-2"                          
-##  [4] "c-Kit,VEGFR,PDGFR"                        
-##  [5] "CaSR"                                     
-##  [6] "CRM1"                                     
-##  [7] "DNA-PK,PI3K"                              
-##  [8] "DUB"                                      
-##  [9] "FLT3,Tie-2,c-Kit,c-Met,VEGFR,Axl"         
-## [10] "GSK-3"                                    
-## [11] "I\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB/IKK"               
-## [12] "I\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB/IKK,E2 conjugating"
-## [13] "IDO"                                      
-## [14] "p53"                                      
-## [15] "p97"                                      
-## [16] "PAK"                                      
-## [17] "Proteasome"                               
-## [18] "Proton Pump"                              
-## [19] "Raf,Src,Bcr-Abl,VEGFR,Ephrin receptor"    
-## [20] "S1P Receptor"                             
-## [21] "STAT"                                     
-## [22] "TNF-alpha,NF-\xfc\xbe\x98\xa6\x94\xbc\xfc\xbe\x98\xb6\x88\xbcB"       
+##  [1] "ATPase,Autophagy"                     
+##  [2] "Aurora Kinase,FLT3,VEGFR"             
+##  [3] "Autophagy,Bcl-2"                      
+##  [4] "c-Kit,VEGFR,PDGFR"                    
+##  [5] "CaSR"                                 
+##  [6] "CRM1"                                 
+##  [7] "DNA-PK,PI3K"                          
+##  [8] "DUB"                                  
+##  [9] "FLT3,Tie-2,c-Kit,c-Met,VEGFR,Axl"     
+## [10] "GSK-3"                                
+## [11] "IB/IKK"                               
+## [12] "IB/IKK,E2 conjugating"                
+## [13] "IDO"                                  
+## [14] "p53"                                  
+## [15] "p97"                                  
+## [16] "PAK"                                  
+## [17] "Proteasome"                           
+## [18] "Proton Pump"                          
+## [19] "Raf,Src,Bcr-Abl,VEGFR,Ephrin receptor"
+## [20] "S1P Receptor"                         
+## [21] "STAT"                                 
+## [22] "TNF-alpha,NF-B"                       
 ## [23] "Topoisomerase"
 ```
+
+Confluency sparklines for the significant targets:
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-25-1.pdf" title="" alt="" width="3000px" />

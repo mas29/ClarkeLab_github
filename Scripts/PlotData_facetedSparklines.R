@@ -1,4 +1,7 @@
 # Plotting sparklines, faceted by certain features
+library(ggplot2)
+library(grid)
+library(plyr)
 
 #sytoxG sparklines, faceted by time to most positive slope, time to max
 ggplot(sytoxG_data, 
@@ -123,18 +126,28 @@ ggplot(sytoxG_data,
 
 #sytoxG sparklines, faceted by targets THAT ARE SIGNIFICANTLY DIFFERENT FROM ZERO
 source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/limma.R")
-sig_targets_SG
-temp <- sytoxG_data[which(sytoxG_data$Targets %in% sig_targets_SG) , ]
-ggplot(temp, 
-       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
-           text=Compound)) +
+sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets %in% sig_targets_SG) , ]
+ggplot(sytoxG_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Facets: Targets") +
-  facet_grid(~Targets, scales = "fixed") +
+  ggtitle(paste("Sytox Green - Significant Targets (p < ", sig_level, ")",sep="")) +
+  facet_wrap(~Targets, ncol=6, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
-        strip.text.x = element_text(size=4, angle=75),
-        axis.text.x = element_blank())
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+
+confluency_data_significant_targets_only <- confluency_data[which(confluency_data$Targets %in% sig_targets_Con) , ]
+ggplot(confluency_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle(paste("Confluency - Significant Targets (p < ", sig_level, ")",sep="")) +
+  facet_wrap(~Targets, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
