@@ -655,5 +655,15 @@ is_significant <- function() {
 print(with(sampMeans, phenotype_value[time_elapsed == "2"] - phenotype_value[time_elapsed == "0"]))
 
 
+Individual sparklines for each compound
+-----------------------------------------------
+  
+  ![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
+
+```{r setup, include=FALSE}
+opts_chunk$set(dev = 'pdf')
+opts_chunk$set(out.width='3000px', dpi=800)
+```
+
 
 

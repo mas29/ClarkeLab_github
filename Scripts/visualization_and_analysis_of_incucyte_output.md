@@ -56,13 +56,6 @@ Compare sparklines for each plate, controls vs treatments, with mean and sd for 
 
 ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-2.png) 
 
-Individual sparklines for each compound
------------------------------------------------
-
-![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
-
-
-
 
 
 Pathway analysis 
@@ -100,7 +93,7 @@ Statistical Analyses
 Normal Q-Q Plots
 --------------
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-1.pdf" title="" alt="" width="3000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-2.pdf" title="" alt="" width="3000px" />
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-2.png) 
 
 At what time point do we see the first significant differences in phenotypic marker values? 
 ------------------
@@ -279,7 +272,7 @@ For Sytox Green:
 
 Sytox Green sparklines for the significant targets:
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-23-1.pdf" title="" alt="" width="3000px" />
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-23-1.png) 
 
 For Confluency:
 
@@ -316,4 +309,4 @@ For Confluency:
 
 Confluency sparklines for the significant targets:
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-25-1.pdf" title="" alt="" width="3000px" />
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-25-1.png) 

@@ -30,8 +30,10 @@ print(paste("The first significant time point for Confluency after the hour 0 is
 
 
 ##### is there a significant difference between plates? ####
-
-
+# design <- model.matrix(~Plate)
+# fit <- lmFit(??, design)
+# fit <- eBayes(fit)
+# topTable(fit)
 
 ##### is there a significant difference between pathways with respect to the control? ####
 # --> SG

@@ -144,16 +144,6 @@ ggplot(con_mean_sd_empty,
         panel.background = element_rect(fill = "white")) 
 ```
 
-Individual sparklines for each compound
------------------------------------------------
-
-![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
-
-```{r setup, include=FALSE}
-opts_chunk$set(dev = 'pdf')
-opts_chunk$set(out.width='3000px', dpi=800)
-```
-
 ```{r, eval=FALSE, echo=FALSE}
 ggplot(sytoxG_data, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
