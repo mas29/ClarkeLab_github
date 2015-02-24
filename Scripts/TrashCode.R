@@ -666,4 +666,6 @@ opts_chunk$set(out.width='3000px', dpi=800)
 ```
 
 
-
+#   temp <- confluency_sytoxG_data_prelim_proc[3839,18:41]
+#   temp <- rbind(temp,confidence_intervals)
+#   time_x_distance <- sum(apply(temp,2,function(x) (x[1]-x[2])))

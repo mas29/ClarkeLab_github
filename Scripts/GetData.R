@@ -4,6 +4,7 @@
 # install.packages("dplyr")
 # install.packages("tidyr")
 # install.packages("reshape")
+# install.packages("Rmisc")
 library(xlsx)
 library(stringr)
 library(plyr)
@@ -12,6 +13,7 @@ library(dplyr)
 library(tidyr)
 library(reshape)
 library(car)
+library(Rmisc)
 
 #set parameters - various files
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -75,6 +77,33 @@ get_slope_info <- function(time_elapsed, penotypic_marker_values) {
            most_negative_slope, most_negative_slope_timepoint))
 }
 
+#Function to get confidence intervals for each timepoint of negative controls.
+
+#@param df -- the data frame containing time course data
+#@param first_timepoint_index -- index in df of first timepoint
+#@param last_timepoint_index -- index in df of last timepoint
+get_confidence_intervals_neg_controls <- function(df, first_timepoint_index, last_timepoint_index) {
+  negControls <- df[df$Pathway == "NegControl",c(first_timepoint_index:last_timepoint_index)]
+  confidence_intervals <- apply(negControls, 2, function(x) CI(x, ci=0.999)) # 99.9% confidence intervals
+  return(confidence_intervals)
+}
+
+#Function to get the time.x.distance metric (compare curves to upper confidence interval of negative controls -- 
+#get the phenotypic marker value "distance" for each timepoint, multiply each distance by the common time interval, 
+#and sum)
+
+#@param confidence_intervals -- confidence intervals for each time point of negative controls data (from get_confidence_intervals_neg_control() function)
+#@param df -- the data frame containing time course data
+#@param first_timepoint_index -- index in df of first timepoint
+#@param last_timepoint_index -- index in df of last timepoint
+#@param time_interval -- common time interval between measurements
+get_time_x_distance <- function(confidence_intervals, df, first_timepoint_index, last_timepoint_index, time_interval) {
+  time_x_distance <- apply(df[, first_timepoint_index:last_timepoint_index],1,function(y) {
+    time_interval*sum(apply(rbind(y,confidence_intervals),2,function(x) (x[1]-x[2])))
+  })
+  return(time_x_distance)
+}
+
 #function to add various metrics to the data
 
 #param df -- data frame of compounds vs raw values for phenotypic marker
@@ -98,20 +127,21 @@ add_metrics <- function(df, start, end, time_elapsed) {
   df$time_to_most_negative_slope <- apply(df[start:end], 1, function(x) (get_slope_info(time_elapsed,x)[4]))
   df$empty <- apply(df, 1, function(x) (grepl("Empty", x[1])))#negative control (T/F) 
   df$empty <- recode(df$empty, "TRUE='Negative Control'; FALSE='Treatment'", as.factor.result = TRUE)
+  # Get time_x_distance data for each compound
+  confidence_intervals <- get_confidence_intervals_neg_controls(confluency_sytoxG_data_prelim_proc, 
+                                                                which(colnames(confluency_sytoxG_data_prelim_proc) == "0"), 
+                                                                which(colnames(confluency_sytoxG_data_prelim_proc) == "46"))
+  df$time_x_distance <- get_time_x_distance(confidence_intervals, 
+                                         confluency_sytoxG_data_prelim_proc, 
+                                         which(colnames(confluency_sytoxG_data_prelim_proc) == "0"), 
+                                         which(colnames(confluency_sytoxG_data_prelim_proc) == "46"), 2)
   return(df)
 }
 
-#### potentially want to change to ddply?????
-
 #function to get features only
-#@param df -- data frame as tbl_df
+#@param df -- data frame 
 get_features <- function(df) {
-  df <- df %>%
-    select(Compound, Catalog.No., Rack.Number, M.w., CAS.Number, Form, Targets, Information, Smiles, Max.Solubility.in.DMSO,
-           URL, Pathway, Plate, Position, Screen, phenotypic_Marker, Elapsed, mean, min, max, AUC_trapezoidal_integration, time_to_max,
-           time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope, most_negative_slope, 
-           time_to_most_negative_slope, empty) %>%
-    distinct()
+  df <- unique(df[, !names(df) %in% c("time_elapsed", "phenotype_value")])
   return(df)
 }
 
@@ -124,11 +154,11 @@ get_features <- function(df) {
 # created by the _____ script
 #!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
 data_from_reconfigure <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
-                                   check.names=F, row.names=1)
+                                  check.names=F, row.names=1)
 
 # preliminary processing on data
 confluency_sytoxG_data_prelim_proc <- preliminary_processing(data_from_reconfigure)
-  
+
 ### There are some strange characters in the Compound names, explaining error for add_metrics ###
 #add metrics
 confluency_sytoxG_data <- add_metrics(confluency_sytoxG_data_prelim_proc, 18, 41, time_elapsed)

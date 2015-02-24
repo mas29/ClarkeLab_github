@@ -268,8 +268,10 @@ Normal Q-Q Plots
 ```{r, echo=FALSE}
 delta_max_min <- scale(sytoxG_data_features$delta_min_max)
 qqnorm(delta_max_min, main="Normal Q-Q Plot for Sytox Green Delta (max-min)")
+qqline(delta_max_min)
 delta_max_min <- scale(confluency_data_features$delta_min_max)
 qqnorm(delta_max_min, main="Normal Q-Q Plot for Confluency Delta (max-min)")
+qqline(delta_max_min)
 ```
 
 At what time point do we see the first significant differences in phenotypic marker values? 
