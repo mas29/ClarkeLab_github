@@ -681,3 +681,38 @@ get_time_x_distance <- function(confidence_intervals, df, first_timepoint_index,
   })
   return(time_x_distance)
 }
+
+# Get time_x_distance data for each compound
+confluency_sytoxG_data$time_x_distance <- get_time_x_distance(confidence_intervals_SG, confidence_intervals_confluency, confluency_sytoxG_data, which(colnames(confluency_sytoxG_data) == "0"), which(colnames(confluency_sytoxG_data) == "46"), 2)
+
+
+
+#Function to get the time.x.distance metric (compare curves to upper confidence interval of negative controls -- 
+#get the phenotypic marker value "distance" for each timepoint, multiply each distance by the common time interval, 
+#and sum)
+
+#@param confidence_intervals_SG -- confidence intervals for each time point of negative controls data for SG (from get_confidence_intervals_neg_control() function)
+#@param confidence_intervals_confluency -- confidence intervals for each time point of negative controls data for confluency (from get_confidence_intervals_neg_control() function)
+#@param df -- the data frame containing time course data
+#@param first_timepoint_index -- index in df of first timepoint
+#@param last_timepoint_index -- index in df of last timepoint
+#@param time_interval -- common time interval between measurements
+get_time_x_distance <- function(confidence_intervals_SG, confidence_intervals_confluency, df, first_timepoint_index, last_timepoint_index, time_interval) {
+  phenotypic_Marker_index <- which(colnames(df) == "phenotypic_Marker")
+  time_x_distance <- apply(confluency_sytoxG_data_prelim_proc,1,function(y) {
+    if (y[phenotypic_Marker_index] == "SG") {
+      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_SG) # use SG confidence intervals
+      time_interval*sum(apply(df_w_CIs,2,function(x) {
+        x <- as.numeric(x)
+        x[1]-x[2]}))
+    } else if (y[phenotypic_Marker_index] == "Con") {
+      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_confluency) # use confluency confidence intervals
+      time_interval*sum(apply(df_w_CIs,2,function(x) {
+        x <- as.numeric(x)
+        x[1]-x[2]}))
+    }
+  })
+  return(time_x_distance)
+}
+
+

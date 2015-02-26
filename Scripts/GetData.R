@@ -14,6 +14,7 @@ library(tidyr)
 library(reshape)
 library(car)
 library(Rmisc)
+library(reshape2)
 
 #set parameters - various files
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -101,36 +102,6 @@ get_confidence_intervals_neg_controls <- function(df, phenotypic_Marker, first_t
   return(confidence_intervals)
 }
 
-
-#Function to get the time.x.distance metric (compare curves to upper confidence interval of negative controls -- 
-#get the phenotypic marker value "distance" for each timepoint, multiply each distance by the common time interval, 
-#and sum)
-
-#@param confidence_intervals_SG -- confidence intervals for each time point of negative controls data for SG (from get_confidence_intervals_neg_control() function)
-#@param confidence_intervals_confluency -- confidence intervals for each time point of negative controls data for confluency (from get_confidence_intervals_neg_control() function)
-#@param df -- the data frame containing time course data
-#@param first_timepoint_index -- index in df of first timepoint
-#@param last_timepoint_index -- index in df of last timepoint
-#@param time_interval -- common time interval between measurements
-get_time_x_distance <- function(confidence_intervals_SG, confidence_intervals_confluency, df, first_timepoint_index, last_timepoint_index, time_interval) {
-  phenotypic_Marker_index <- which(colnames(df) == "phenotypic_Marker")
-  time_x_distance <- apply(confluency_sytoxG_data_prelim_proc,1,function(y) {
-    if (y[phenotypic_Marker_index] == "SG") {
-      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_SG) # use SG confidence intervals
-      time_interval*sum(apply(df_w_CIs,2,function(x) {
-        x <- as.numeric(x)
-        x[1]-x[2]}))
-    } else if (y[phenotypic_Marker_index] == "Con") {
-      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_confluency) # use confluency confidence intervals
-      time_interval*sum(apply(df_w_CIs,2,function(x) {
-        x <- as.numeric(x)
-        x[1]-x[2]}))
-    }
-  })
-  return(time_x_distance)
-}
-
-
 # Function to add various initial metrics to the data 
 # (each sparkline is assessed as its own entity, for mean, min, max, etc. without regard to the negative control values)
 
@@ -158,10 +129,36 @@ add_initial_metrics <- function(df, start, end, time_elapsed) {
 
 # Function to add metrics to the data, comparing each sparkline to the negative control (NC)
 
-# param df -- data frame of...
-add_initial_metrics_diff_to_NC <- function(df) {
+add_metrics_compare_to_NC <- function(prelim_df, df, phenotypic_markers, first_timepoint, last_timepoint) {
+  # Get confidence intervals on negative control data for each phenotypic marker
+  confidence_intervals <- NULL
+  for (i in 1:length(phenotypic_markers)) {
+    new_confidence_intervals <- as.data.frame(t(get_confidence_intervals_neg_controls(prelim_df, phenotypic_markers[i], 
+                                                                                      which(colnames(prelim_df) == first_timepoint), 
+                                                                                      which(colnames(prelim_df) == last_timepoint))))
+    colnames(new_confidence_intervals) <- paste0("phenotype_value.NC.",colnames(new_confidence_intervals))
+    new_confidence_intervals$time_elapsed <- rownames(new_confidence_intervals)
+    new_confidence_intervals$phenotypic_Marker <- phenotypic_markers[i]
+    confidence_intervals <- rbind(confidence_intervals, new_confidence_intervals)
+  }
   
+  # Add confidence intervals to data 
+  df <- merge(df, confidence_intervals, by = c("time_elapsed", "phenotypic_Marker"), all.x=T, sort=F)
+  df <- tbl_df(df)
+  df <- df %>% #arrange by compound name, time elapsed
+    arrange(Compound, phenotypic_Marker, time_elapsed)
+  
+  # Make calculations using comparisons to negative controls:
+  # Time X Distance
+  df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
+  sum_diff.to.NC.upper <- aggregate(df$phenotypic_value.diff.to.NC.upper, by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound
+  colnames(sum_diff.to.NC.upper) <- c("Compound", "phenotypic_Marker", "phenotypic_value.diff.to.NC.upper.sum")
+  sum_diff.to.NC.upper$time_x_distance <- sum_diff.to.NC.upper$phenotypic_value.diff.to.NC.upper.sum * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
+  df <- merge(df, sum_diff.to.NC.upper, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
+  
+  return(df)
 }
+
 
 #function to get features only
 #@param df -- data frame 
@@ -199,45 +196,8 @@ colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "value"] <-
 confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed)) #convert factor to number for time_elapsed column
 
 
-
-
 # add metrics to compare each sparkline to the negative controls
-
-
-
-
-# Get confidence intervals on negative control data for each phenotypic marker
-confidence_intervals <- NULL
-for (i in 1:length(phenotypic_markers)) {
-  new_confidence_intervals <- as.data.frame(t(get_confidence_intervals_neg_controls(confluency_sytoxG_data_prelim_proc, phenotypic_markers[i], 
-                                                                                which(colnames(confluency_sytoxG_data_prelim_proc) == first_timepoint), 
-                                                                                which(colnames(confluency_sytoxG_data_prelim_proc) == last_timepoint))))
-  colnames(new_confidence_intervals) <- paste0("phenotype_value.NC.",colnames(new_confidence_intervals))
-  new_confidence_intervals$time_elapsed <- rownames(new_confidence_intervals)
-  new_confidence_intervals$phenotypic_Marker <- phenotypic_markers[i]
-  confidence_intervals <- rbind(confidence_intervals, new_confidence_intervals)
-}
-
-# Add confidence intervals to data 
-confluency_sytoxG_data <- merge(confluency_sytoxG_data, confidence_intervals, by = c("time_elapsed", "phenotypic_Marker"), all=T, sort=F)
-confluency_sytoxG_data <- tbl_df(confluency_sytoxG_data)
-confluency_sytoxG_data <- confluency_sytoxG_data %>% #arrange by compound name, time elapsed
-  arrange(Compound, phenotypic_Marker, time_elapsed)
-
-# Make calculations using comparisons to negative controls
-confluency_sytoxG_data$phenotypic_value.diff.to.NC.upper <- confluency_sytoxG_data$phenotype_value - confluency_sytoxG_data$phenotype_value.NC.upper
-sum_diff.to.NC.upper <- aggregate(confluency_sytoxG_data, by=list(Compound,phenotypic_value.diff.to.NC.upper), FUN=sum)
-
-# Get time_x_distance data for each compound
-confluency_sytoxG_data$time_x_distance <- get_time_x_distance(confidence_intervals_SG, confidence_intervals_confluency, confluency_sytoxG_data, which(colnames(confluency_sytoxG_data) == "0"), which(colnames(confluency_sytoxG_data) == "46"), 2)
-
-
-
-
-
-
-
-
+confluency_sytoxG_data <- add_metrics_compare_to_NC(confluency_sytoxG_data_prelim_proc, confluency_sytoxG_data, phenotypic_markers, first_timepoint, last_timepoint)
 
 # get separated data for each phenotypic marker
 sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "SG")
