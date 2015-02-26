@@ -31,6 +31,23 @@ February 9, 2015
 ```
 ## Warning: package 'reshape2' was built under R version 3.1.2
 ```
+
+```
+## Warning: package 'gplots' was built under R version 3.1.2
+```
+
+```
+## 
+## Attaching package: 'gplots'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     lowess
+```
+
+```
+## Warning: package 'RColorBrewer' was built under R version 3.1.2
+```
 Quality Control
 =============
 
@@ -87,13 +104,18 @@ Delta (max-min) values by Pathway
 
 <center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/235.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
 
+Heatmap of metrics for all compounds (not negative controls) 
+-----------
+
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-1.png) 
+
 Statistical Analyses
 ===================
 
 Normal Q-Q Plots
 --------------
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-2.png) 
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-2.png) 
 
 At what time point do we see the first significant differences in phenotypic marker values? 
 ------------------
@@ -272,7 +294,7 @@ For Sytox Green:
 
 Sytox Green sparklines for the significant targets:
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-23-1.png) 
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-24-1.png) 
 
 For Confluency:
 
@@ -309,4 +331,4 @@ For Confluency:
 
 Confluency sparklines for the significant targets:
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-25-1.png) 
+![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-26-1.png) 

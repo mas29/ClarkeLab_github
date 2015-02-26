@@ -669,3 +669,15 @@ opts_chunk$set(out.width='3000px', dpi=800)
 #   temp <- confluency_sytoxG_data_prelim_proc[3839,18:41]
 #   temp <- rbind(temp,confidence_intervals)
 #   time_x_distance <- sum(apply(temp,2,function(x) (x[1]-x[2])))
+
+# This works, but not for SG and Con together
+
+get_time_x_distance <- function(confidence_intervals, df, first_timepoint_index, last_timepoint_index, time_interval) {
+  
+  
+  
+  time_x_distance <- apply(df[, first_timepoint_index:last_timepoint_index],1,function(y) {
+    time_interval*sum(apply(rbind(y,confidence_intervals),2,function(x) (x[1]-x[2])))
+  })
+  return(time_x_distance)
+}
