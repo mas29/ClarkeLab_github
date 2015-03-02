@@ -144,26 +144,59 @@ add_metrics_compare_to_NC <- function(prelim_df, df, phenotypic_markers, first_t
   
   # Add confidence intervals to data 
   df <- merge(df, confidence_intervals, by = c("time_elapsed", "phenotypic_Marker"), all.x=T, sort=F)
-  df <- tbl_df(df)
-  df <- df %>% #arrange by compound name, time elapsed
-    arrange(Compound, phenotypic_Marker, time_elapsed)
   
   # Make calculations using comparisons to negative controls:
   # Time X Distance
-  df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
-  sum_diff.to.NC.upper <- aggregate(df$phenotypic_value.diff.to.NC.upper, by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound
-  colnames(sum_diff.to.NC.upper) <- c("Compound", "phenotypic_Marker", "phenotypic_value.diff.to.NC.upper.sum")
-  sum_diff.to.NC.upper$time_x_distance <- sum_diff.to.NC.upper$phenotypic_value.diff.to.NC.upper.sum * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
-  df <- merge(df, sum_diff.to.NC.upper, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
+  get_time_x_distance <- function(phenotype_value.NC.col, upper_lower_or_mean) {
+    df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,sep="")] <- df$phenotype_value - df[,phenotype_value.NC.col] # Get difference to confidence interval's upper value for each timepoint
+    sum_diff.to.NC <- aggregate(df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,sep="")], by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound for each phenotypic marker
+    colnames(sum_diff.to.NC) <- c("Compound", "phenotypic_Marker", paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep=""))
+    sum_diff.to.NC$time_x_distance <- sum_diff.to.NC[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep="")] * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
+    df <- merge(df, sum_diff.to.NC, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
+    colnames(df)[which(colnames(df) == "time_x_distance")] <- paste("time_x_distance.",upper_lower_or_mean,sep="")
+    df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep="")] <- NULL # No point in keeping the sum of differences if we have the time X distance
+    return(df)
+  }
+  df <- get_time_x_distance("phenotype_value.NC.upper", "upper")
+  df <- get_time_x_distance("phenotype_value.NC.mean", "mean")
+  df <- get_time_x_distance("phenotype_value.NC.lower", "lower")
+  
+  df <- tbl_df(df) %>% #arrange by compound name, time elapsed
+    arrange(Compound, phenotypic_Marker, time_elapsed)
   
   return(df)
 }
 
+# Function to find the first time point at which the curve overtakes the upperbound and lowerbound of the negative controls confidence intervals
+
+# @param df -- data frame after metrics are added, and compared to negative controls
+get_timepoints_of_phenotype_value_overtaking_NC <- function(df) {
+  upper <- by(df, list(phenotypic_Marker = df$phenotypic_Marker, Compound = df$Compound), function(x) {
+    # Get the timepoint where:
+    # a) phenotype value exceeds upperbound of negative control confidence interval
+    phenotype_value_exceeds_NC_upperbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.upper > 0)] 
+    return(phenotype_value_exceeds_NC_upperbound.timepoint[1])
+  })
+  lower <- by(df, list(phenotypic_Marker = df$phenotypic_Marker, Compound = df$Compound), function(x) {
+    # Get the timepoint where:
+    # b) phenotype value drops below lowerbound of negative control confidence interval
+    phenotype_value_falls_below_NC_lowerbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.lower < 0)] 
+    return(phenotype_value_falls_below_NC_lowerbound.timepoint[1])
+  })
+  upper <- melt(rbind(upper))
+  colnames(upper) <- c("phenotypic_Marker", "Compound", "phenotype_value_exceeds_NC_upperbound.timepoint")
+  df <- merge(df, upper, by=c("phenotypic_Marker", "Compound"))
+  lower <- melt(rbind(lower))
+  colnames(lower) <- c("phenotypic_Marker", "Compound", "phenotype_value_falls_below_NC_lowerbound.timepoint")
+  df <- merge(df, lower, by=c("phenotypic_Marker", "Compound"))
+  return(df)
+}
 
 #function to get features only
 #@param df -- data frame 
 get_features <- function(df) {
-  df <- unique(df[, !names(df) %in% c("time_elapsed", "phenotype_value")])
+  df <- unique(df[, !names(df) %in% c("time_elapsed", "phenotype_value", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower", 
+                                      "phenotypic_value.diff.to.NC.upper", "phenotypic_value.diff.to.NC.mean", "phenotypic_value.diff.to.NC.lower")])
   return(df)
 }
 
@@ -188,16 +221,17 @@ confluency_sytoxG_data <- add_initial_metrics(confluency_sytoxG_data_prelim_proc
 
 # add drugbank data??
 
-
 # reshape to tall data frame
 confluency_sytoxG_data <- melt(confluency_sytoxG_data, measure.vars=(colnames(confluency_sytoxG_data)[which(colnames(confluency_sytoxG_data)==first_timepoint):which(colnames(confluency_sytoxG_data)==last_timepoint)]))
 colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "variable"] <- "time_elapsed"
 colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "value"] <- "phenotype_value"
 confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed)) #convert factor to number for time_elapsed column
 
-
 # add metrics to compare each sparkline to the negative controls
 confluency_sytoxG_data <- add_metrics_compare_to_NC(confluency_sytoxG_data_prelim_proc, confluency_sytoxG_data, phenotypic_markers, first_timepoint, last_timepoint)
+
+# find first time points at which the curve overtakes the upperbound and lowerbound on the confidence intervals for negative controls
+confluency_sytoxG_data <- get_timepoints_of_phenotype_value_overtaking_NC(confluency_sytoxG_data)
 
 # get separated data for each phenotypic marker
 sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "SG")

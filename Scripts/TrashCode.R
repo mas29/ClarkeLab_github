@@ -716,3 +716,22 @@ get_time_x_distance <- function(confidence_intervals_SG, confidence_intervals_co
 }
 
 
+# Make calculations using comparisons to negative controls:
+# Time X Distance
+  df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
+sum_diff.to.NC.upper <- aggregate(df$phenotypic_value.diff.to.NC.upper, by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound
+colnames(sum_diff.to.NC.upper) <- c("Compound", "phenotypic_Marker", "phenotypic_value.diff.to.NC.upper.sum")
+sum_diff.to.NC.upper$time_x_distance <- sum_diff.to.NC.upper$phenotypic_value.diff.to.NC.upper.sum * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
+df <- merge(df, sum_diff.to.NC.upper, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
+
+## UPPER TIMEPOINT
+temp_ds <- confluency_sytoxG_data[97:192,]
+temp <- by(temp_ds, list(phenotypic_Marker = temp_ds$phenotypic_Marker, Compound = temp_ds$Compound), function(x) {
+  # Get the timepoint where:
+  # a) phenotype value exceeds upperbound of negative control confidence interval
+  phenotype_value_exceeds_NC_upperbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.upper > 0)] 
+  # b) phenotype value drops below lowerbound of negative control confidence interval
+  phenotype_value_falls_below_NC_lowerbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.lower < 0)] 
+  timepoints <- list(phenotype_value_exceeds_NC_upperbound.timepoint[1], phenotype_value_falls_below_NC_lowerbound.timepoint[1])
+  return(timepoints)
+})

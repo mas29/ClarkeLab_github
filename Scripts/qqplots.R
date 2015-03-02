@@ -13,9 +13,12 @@ qqline(time_x_distance)
 
 empty <- sytoxG_data_features$empty
 
+qqPlot(delta_min_max, distribution="normal")
 qqPlot(time_x_distance, col=empty)
 qqPlot(delta_max_min, col=empty)
 
+x = rweibull(20, 8, 2)
+qqPlot(x, "log-normal")
 
 residuals(qqnorm(delta_max_min))
 qqPlot(delta_max_min, col=)
