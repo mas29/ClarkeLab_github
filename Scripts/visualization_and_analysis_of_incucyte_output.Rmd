@@ -1,0 +1,463 @@
+---
+title: "Visualization and Analysis of IncuCyte Output"
+author: "Maia Smith"
+date: "February 9, 2015"
+output:
+  html_document:
+    keep_md: yes
+---
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(grid)
+library(plyr)
+library(knitr)
+library(devtools)
+library(car)
+library(plotly)
+library(reshape2)
+library(gplots)
+library(RColorBrewer)
+py <- plotly("mas29", "8s6jru0os3")
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+#dir = "/Users/mas29/Documents/ClarkeLab_github/"
+load(file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
+load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+sm_ds <- sytoxG_data[1:2408,]
+```
+Quality Control
+=============
+
+Compare controls and treatments
+-----------------------------------------------
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/225/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/223/confluency-over-time-control-vs-treatment.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+Compare plates for controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# compare sytoxG sparklines, faceted by plates, empty
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+
+# compare confluency sparklines, faceted by plates, empty
+ggplot(confluency_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
+-----------------------------------------------
+
+```{r, echo=FALSE}
+#sytoxG - calculate mean and sd values for each plate, empty vs not empty
+sytoxG_mean_sd_empty <- ddply(sytoxG_data, ~ Plate * time_elapsed * empty, summarize,
+                              mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#sytoxG - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean & SD") +
+  scale_colour_discrete(name="Plate") +
+  ggtitle("Sytox Green\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+#confluency - calculate mean and sd values for each plate, empty vs not empty
+con_mean_sd_empty <- ddply(confluency_data, ~ Plate * time_elapsed * empty, summarize,
+                              mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#confluency - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(con_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Confluency Mean & SD") +
+  scale_colour_discrete(name="Plate") +
+  ggtitle("Confluency\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+```
+
+```{r, eval=FALSE, echo=FALSE}
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound, text=Compound)) +
+  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time") +
+  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+  labs(fill = "Delta (max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"))
+```
+
+Pathway analysis 
+================
+
+Sparklines by Pathway
+------------------------
+
+```{r, eval=FALSE, echo=FALSE} 
+plot <- ggplot(sytoxG_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+                   text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/227/sytox-green-facets-pathway.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE} 
+plot <- ggplot(confluency_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+                   text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/230/confluency-facets-pathway.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+Delta (max-min) values by Pathway
+----------------------------------
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  ggtitle("Sytox Green Delta (max-min) by Pathway") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/233.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(confluency_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  ggtitle("Confluency Delta (max-min) by Pathway") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
+```
+
+```{r, echo=FALSE}
+url<-"https://plot.ly/~mas29/235.embed?width=550&height=550" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+Heatmap of metrics for all compounds (not negative controls) 
+=========
+
+```{r, echo=FALSE}
+# Select metrics of interest, for all compounds (no negative controls)
+data_for_heatmap <- sytoxG_data_features[sytoxG_data_features$Pathway != "NegControl", 
+                                         names(sytoxG_data_features) %in% c("time_x_distance", "delta_min_max", "time_to_max")]
+rownames(data_for_heatmap) <- sytoxG_data_features[sytoxG_data_features$Pathway != "NegControl", 
+                                                   names(sytoxG_data_features) == "Compound"]
+
+# Scale metrics.
+data_for_heatmap <- scale(data_for_heatmap)
+
+# Draw heatmap.
+my_palette <- colorRampPalette(c("red", "white", "green"))(n = 299)
+heatmap.2(as.matrix(data_for_heatmap), Rowv = TRUE, Colv = TRUE, symm = F, hclustfun = hclust, dendrogram = c("row"), cexCol=0.5, cexRow=0.1, col=my_palette)
+```
+
+Comparison to Negative Controls
+================
+
+```{r}
+# Number of time intervals
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
+
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get rid of negative control sparklines
+sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
+confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
+
+# Plot SG
+ggplot(sytoxG_data_no_NC) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Time Point at which Compound Surpasses Negative Control\n(Phenotypic Marker: Sytox Green)") +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                             fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control')) +
+  facet_wrap(~phenotype_value_exceeds_NC_upperbound.timepoint, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+# Plot confluency
+ggplot(confluency_data_no_NC) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Time Point at which Compound Drops Below Negative Control\n(Phenotypic Marker: Confluency)") +
+  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                         fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control')) +
+  facet_wrap(~phenotype_value_falls_below_NC_lowerbound.timepoint, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+Statistical Analyses
+===================
+
+Normal Q-Q Plots
+--------------
+
+```{r, echo=FALSE}
+delta_max_min <- scale(sytoxG_data_features$delta_min_max)
+qqnorm(delta_max_min, main="Normal Q-Q Plot for Sytox Green Delta (max-min)")
+qqline(delta_max_min)
+delta_max_min <- scale(confluency_data_features$delta_min_max)
+qqnorm(delta_max_min, main="Normal Q-Q Plot for Confluency Delta (max-min)")
+qqline(delta_max_min)
+```
+
+At what time point do we see the first significant differences in phenotypic marker values? 
+------------------
+In Sytox Green?
+
+```{r, echo=FALSE}
+data_for_stats <- confluency_sytoxG_data
+
+# At what time point do we see the first significant differences in phenotypic marker values? 
+sig_level <- 0.05
+#  --> For SG? 
+fit_SG <- lm(phenotype_value ~ as.factor(time_elapsed), data_for_stats, subset = phenotypic_Marker == "SG")
+print(summary(fit_SG))
+summary <- as.data.frame(summary(fit_SG)$coef)
+first_sig_timepoint <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])[2]
+print(paste("The first significant time point for Sytox Green after the hour 0 is hour ",gsub("as.factor\\(time_elapsed\\)","",first_sig_timepoint),".",sep=""))
+```
+
+In Confluency?
+
+```{r, echo=FALSE}
+#  --> For Confluency?
+fit_con <- lm(phenotype_value ~ as.factor(time_elapsed), data_for_stats, subset = phenotypic_Marker == "Con")
+print(summary(fit_con))
+summary <- as.data.frame(summary(fit_con)$coef)
+first_sig_timepoint <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])[2]
+print(paste("The first significant time point for Confluency after the hour 0 is hour ",gsub("as.factor\\(time_elapsed\\)","",first_sig_timepoint),".",sep=""))
+```
+
+Which pathways are significantly different from the negative controls (measured by AUC)? 
+------------------
+
+For Sytox Green:
+
+```{r, echo=FALSE}
+# --> SG
+fit_SG <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "SG")
+summary <-  as.data.frame(summary(fit_SG)$coef)
+sig_level <- 0.01
+sig_pathways_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_SG <- gsub("Pathway","",sig_pathways_SG)
+print(paste("The following pathways have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_SG[2:length(sig_pathways_SG)])
+```
+
+For Confluency:
+
+```{r, echo=FALSE} 
+# --> Con
+fit_Con <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "Con")
+summary <-  as.data.frame(summary(fit_Con)$coef)
+sig_level <- 0.01
+sig_pathways_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_Con <- gsub("Pathway","",sig_pathways_Con)
+print(paste("The following pathways have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_Con[2:length(sig_pathways_Con)])
+```
+
+Which targets are significantly different from the negative controls (measured by AUC)?
+------------------------
+
+For Sytox Green:
+
+```{r, echo=FALSE}
+# --> SG
+fit_SG <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "SG")
+summary <-  as.data.frame(summary(fit_SG)$coef)
+sig_level <- 1e-20
+sig_targets_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_targets_SG <- gsub("Targets","",sig_targets_SG)
+print(paste("The following targets have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_targets_SG[2:length(sig_targets_SG)])
+```
+
+Sytox Green sparklines for the significant targets:
+
+```{r,echo=FALSE}
+sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets %in% sig_targets_SG) , ]
+ggplot(sytoxG_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle(paste("Sytox Green - Significant Targets (p < ", sig_level, ")",sep="")) +
+  facet_wrap(~Targets, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+```
+
+For Confluency:
+
+```{r, echo=FALSE}
+# --> Con
+fit_Con <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "Con")
+summary <-  as.data.frame(summary(fit_Con)$coef)
+sig_level <- 1e-20
+sig_targets_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_targets_Con <- gsub("Targets","",sig_targets_Con)
+print(paste("The following targets have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_targets_Con[2:length(sig_targets_Con)])
+```
+
+Confluency sparklines for the significant targets:
+
+```{r,echo=FALSE}
+confluency_data_significant_targets_only <- confluency_data[which(confluency_data$Targets %in% sig_targets_Con) , ]
+ggplot(confluency_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle(paste("Confluency - Significant Targets (p < ", sig_level, ")",sep="")) +
+  facet_wrap(~Targets, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+```

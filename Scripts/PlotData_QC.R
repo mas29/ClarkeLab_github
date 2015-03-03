@@ -6,7 +6,7 @@ ggplot(sytoxG_data,
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  ggtitle("Sytox Green Over Time - By Plate") +
   facet_grid(~ Plate, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
@@ -19,7 +19,7 @@ ggplot(sytoxG_data,
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time - empty vs not empty") +
+  ggtitle(ggtitle("Sytox Green Over Time - Control vs Treatment")) +
   facet_grid(~empty, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
@@ -43,7 +43,7 @@ ggplot(sytoxG_mean_sd_empty,
   facet_grid(~ empty, scales = "fixed") +
   xlab("Time Elapsed") +
   ylab("Sytox Green Mean & SD") +
-  ggtitle("Sytox Green - Plate Mean & SD (line size) & Negative Control T/F (facets)") +
+  ggtitle("Sytox Green\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 

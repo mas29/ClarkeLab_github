@@ -399,3 +399,339 @@ ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"),
         panel.margin = unit(.085, "cm"),
         strip.background = element_rect(fill = "white"))
+
+
+install.packages("devtools")
+install_github("plotly", "ropensci")
+```{r}
+
+library(knitr)
+library(devtools)
+library(plotly)
+library(ggplot2)
+
+py <- plotly("mas29", "8s6jru0os3")
+url<-"https://plot.ly/~mas29/47/pathway-vs-delta-min-max/" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' src='", url, 
+                       "/650/800' width='650' height='800'></iframe></center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, plotly=TRUE}
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+load(paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+a <- ggplot(sytoxG_data_features, aes(delta_min_max, Pathway, text=Compound)) + 
+  geom_point()
+
+py$ggplotly(a, kwargs=list(world_readable=FALSE))
+```
+
+
+url<-"https://plot.ly/~mas29/68/pathway-vs-delta-min-max/" 
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+                       "/800/1200' width='800' height='1200'></iframe><center>", sep = "")
+
+#convert factor to double for phenotypic marker value columns
+for (i in 18:41) {
+  confluency_sytoxG_data[,i] <- as.numeric(as.character(confluency_sytoxG_data[,i]))
+}
+
+#fill in NA values with na value specified (0.23, or 1/4 of a cell)
+confluency_sytoxG_data[18:41][is.na(confluency_sytoxG_data[18:41])] <- na_value
+
+# load source to GetData.R
+source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
+
+# load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
+# created by the _____ script
+#!!!!!!!!!!!!!!!!!!!! replace filename of toXL data frame with the correct filename !!!!!!!!!!!!!!!!!!!
+df <- read.csv(file=paste(dir,"Files/C2C12_tunicamycin_output.csv",sep=""), header=T, 
+               check.names=F, row.names=1)
+
+# preliminary processing on data
+df <- preliminary_processing(df)
+
+
+# load sytoxG_data file
+load("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data.R")
+
+# data for curve metrics calculations
+sytoxG_curve_metrics <- sytoxG_data
+
+# work with the first compound
+compound1 <- sytoxG_curve_metrics[1:24,]
+
+#fit first degree polynomial equation:
+fit1 <- lm(formula = phenotype_value ~ time_elapsed, data = compound1)
+#second degree
+fit2 <- lm(formula = phenotype_value~poly(time_elapsed,2,raw=TRUE), data = compound1)
+#third degree
+fit3 <- lm(formula = phenotype_value~poly(time_elapsed,3,raw=TRUE), data = compound1)
+#fourth degree
+fit4 <- lm(formula = phenotype_value~poly(time_elapsed,4,raw=TRUE), data = compound1)
+#fifth degree
+fit5 <- lm(formula = phenotype_value~poly(time_elapsed,5,raw=TRUE), data = compound1)
+
+#check the significance of the bigger model
+anova(fit4,fit5)
+
+#generate 24 numbers over the range [0,46]
+xx <- seq(0,46, length=24)
+plot(compound1$time_elapsed, compound1$phenotype_value, pch=19)
+lines(xx, predict(fit1, data.frame(x=xx)), col="red")
+lines(xx, predict(fit2, data.frame(x=xx)), col="green")
+lines(xx, predict(fit3, data.frame(x=xx)), col="blue")
+lines(xx, predict(fit4, data.frame(x=xx)), col="purple")
+lines(xx, predict(fit5, data.frame(x=xx)), col="pink")
+
+
+# SG <- SG %>%
+#   arrange(Pathway)
+
+# (p <- ggplot(SG, aes(time_elapsed, Targets, color = Pathway)) + 
+#    geom_tile(aes(fill = mean_value_for_target)))
+#  
+#  (p <- ggplot(SG, aes(time_elapsed, Targets, color = Pathway)) + 
+#     geom_point(aes(size = mean_value_for_target)) +
+#     theme(panel.grid = element_blank(),
+#           panel.background = element_rect(fill = "white")))
+
+# SG_for_heatmap <- dcast(SG,Targets + Pathway ~ time_elapsed)
+# SG_for_heatmap_values <- as.matrix(SG_for_heatmap[,c(-1,-2)])
+#   
+# #cluster
+# distance = dist(SG_for_heatmap_values, method = "euclidean")
+# cluster = hclust(distance, method = "ward.D")
+# 
+# heatmap(
+#   SG_for_heatmap_values, Rowv=as.dendrogram(cluster),
+#   Colv=NA
+# )
+
+data_for_pca <- SG_features_treatment_only %>%
+  select(intercept, coef1, coef2, coef3, coef4,
+         M.w., Max.Solubility.in.DMSO, mean, min, max, AUC_trapezoidal_integration, time_to_max, 
+         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope,
+         most_negative_slope, time_to_most_negative_slope) 
+
+
+# PCA on sytoxG data features 
+# with guidance from http://www.r-bloggers.com/computing-and-visualizing-pca-in-r/
+
+# install.packages("ggbiplot")
+library(dplyr)
+library(devtools)
+library(ggbiplot)
+install_github("ggbiplot", "vqv")
+
+# load data
+load("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/DataObjects/sytoxG_data_features.R")
+
+data_for_pca <- sytoxG_data_features %>%
+  select(mean, min, max, AUC_trapezoidal_integration, time_to_max, 
+         time_to_min, delta_min_max, delta_start_finish, most_positive_slope, time_to_most_positive_slope,
+         most_negative_slope, time_to_most_negative_slope) 
+
+targets <- sytoxG_data_features$Targets
+
+pathways <- sytoxG_data_features$Pathway
+
+plates <- as.factor(sytoxG_data_features$Plate)
+
+# # # log transform  BUT what to do with negatives...
+# log_data_for_pca <- log(data_for_pca)
+
+# PCA
+pca <- prcomp(data_for_pca, center = TRUE, scale. = TRUE) 
+
+# Standard deviations for each PC
+print(pca)
+
+# A plot of the variances associated with each PC. 
+plot(pca, type = "l")
+
+# The importance of each PC
+# 1st row -- standard deviation associated with each PC. 
+# 2nd row -- proportion of the variance explained by each PC 
+# 3rd row -- cumulative proportion of explained variance
+summary(pca)
+
+### add curve fits values...?
+
+
+g <- ggbiplot(pca, obs.scale = 1, var.scale = 1, 
+              groups = pathways, ellipse = TRUE, 
+              circle = TRUE)
+g <- g + scale_color_discrete(name = '')
+g <- g + theme(legend.direction = 'horizontal', 
+               legend.position = 'top')
+print(g)
+py$ggplotly(g, kwargs=list(world_readable=FALSE))
+
+
+
+# Control vs Treatment
+plot <- ggplot(sytoxG_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound,
+                   group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
+url <- response$url
+
+mf_labeller <- function(var, value){
+  value <- as.character(value)
+  if (var=="phenotypic_Marker") { 
+    value[value=="Con"] <- "Confluency"
+    value[value=="SG"]   <- "Sytox Green"
+  }
+  return(value)
+}
+
+
+# Test whether two conditions are significantly different
+is_significant <- function() {
+  # Perform inference for a contrast
+  # The “W” shape of the expression profile for “1438786_a_at” means that the expression 
+  # values for developmental stages P2 and P10 are quite similar. We could formally test 
+  # whether the P2 and P10 effects are equal or, equivalently, whether their difference is 
+  # equal to zero.
+  
+  # First extract the parameter estimates from the linear model you fit above. You did save 
+  # the fit, right? If not, edit your code to do so and re-run that bit. Hint: the coef() 
+  # function will pull parameter estimates out of a wide array of fitted model objects in R.
+  
+  fit_1438786_a_at$coef
+  contMat <- c(0,1,0,-1,0)
+  (obsDiff <- contMat %*% coef(fit_1438786_a_at))
+  
+  # Let’s check that this really is the observed difference in sample mean for the wild type mice, P2 vs. P10.
+  
+  (sampMeans <- aggregate(gExp ~ devStage, mDat, FUN = mean,
+                          subset = gType == "wt"))
+  
+  with(sampMeans, gExp[devStage == "P2"] - gExp[devStage == "P10"])
+  
+  # Yes! Agrees with the observed difference we computed by multiplying our contrast matrix and the 
+  # estimated parameters. If you don’t get agreement, you have a problem … probably with your contrast matrix.
+  # 
+  # Now we need the (estimated) standard error for our contrast. The variance-covariance matrix of the 
+  # parameters estimated in the original model can be obtained with vcov() and is equal to [Math Processing Error].
+  
+  vcov(fit_1438786_a_at)
+  
+  # Let’s check that this is really true. If we take the diagonal elements and take their square root, 
+  # they should be exactly equal to the standard errors reported for out original model. Are they?
+  
+  summary(fit_1438786_a_at)$coefficients[ , "Std. Error"]
+  sqrt(diag(vcov(fit_1438786_a_at)))
+  
+  # Yes! Note for the future that you can get the typical matrix of inferential results from most 
+  # fitted model objects for further computing like so:
+  
+  summary(fit_1438786_a_at)$coefficients
+  
+  # Returning to our test of the P2 vs. P10 contrast, recall that the variance-covariance matrix 
+  # of a contrast obtained as Cα̂  is C(XTX)−1CTσ̂ 2.
+  
+  print(estSe <- t(contMat) %*% vcov(fit_1438786_a_at) %*% contMat)
+  
+  # Test statistic = observed effect divided by its estimated standard error.
+  
+  print(testStat <- obsDiff/estSe)
+  
+  # Compute a two-sided p-value.
+  
+  2 * pt(abs(testStat), df = df.residual(fit_1438786_a_at), lower.tail = FALSE)  
+}
+
+print(with(sampMeans, phenotype_value[time_elapsed == "2"] - phenotype_value[time_elapsed == "0"]))
+
+
+Individual sparklines for each compound
+-----------------------------------------------
+  
+  ![Caption for the picture.](/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Plots/Sparklines_by_target.jpeg)
+
+```{r setup, include=FALSE}
+opts_chunk$set(dev = 'pdf')
+opts_chunk$set(out.width='3000px', dpi=800)
+```
+
+
+#   temp <- confluency_sytoxG_data_prelim_proc[3839,18:41]
+#   temp <- rbind(temp,confidence_intervals)
+#   time_x_distance <- sum(apply(temp,2,function(x) (x[1]-x[2])))
+
+# This works, but not for SG and Con together
+
+get_time_x_distance <- function(confidence_intervals, df, first_timepoint_index, last_timepoint_index, time_interval) {
+  
+  
+  
+  time_x_distance <- apply(df[, first_timepoint_index:last_timepoint_index],1,function(y) {
+    time_interval*sum(apply(rbind(y,confidence_intervals),2,function(x) (x[1]-x[2])))
+  })
+  return(time_x_distance)
+}
+
+# Get time_x_distance data for each compound
+confluency_sytoxG_data$time_x_distance <- get_time_x_distance(confidence_intervals_SG, confidence_intervals_confluency, confluency_sytoxG_data, which(colnames(confluency_sytoxG_data) == "0"), which(colnames(confluency_sytoxG_data) == "46"), 2)
+
+
+
+#Function to get the time.x.distance metric (compare curves to upper confidence interval of negative controls -- 
+#get the phenotypic marker value "distance" for each timepoint, multiply each distance by the common time interval, 
+#and sum)
+
+#@param confidence_intervals_SG -- confidence intervals for each time point of negative controls data for SG (from get_confidence_intervals_neg_control() function)
+#@param confidence_intervals_confluency -- confidence intervals for each time point of negative controls data for confluency (from get_confidence_intervals_neg_control() function)
+#@param df -- the data frame containing time course data
+#@param first_timepoint_index -- index in df of first timepoint
+#@param last_timepoint_index -- index in df of last timepoint
+#@param time_interval -- common time interval between measurements
+get_time_x_distance <- function(confidence_intervals_SG, confidence_intervals_confluency, df, first_timepoint_index, last_timepoint_index, time_interval) {
+  phenotypic_Marker_index <- which(colnames(df) == "phenotypic_Marker")
+  time_x_distance <- apply(confluency_sytoxG_data_prelim_proc,1,function(y) {
+    if (y[phenotypic_Marker_index] == "SG") {
+      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_SG) # use SG confidence intervals
+      time_interval*sum(apply(df_w_CIs,2,function(x) {
+        x <- as.numeric(x)
+        x[1]-x[2]}))
+    } else if (y[phenotypic_Marker_index] == "Con") {
+      df_w_CIs <- rbind(y[first_timepoint_index:last_timepoint_index],confidence_intervals_confluency) # use confluency confidence intervals
+      time_interval*sum(apply(df_w_CIs,2,function(x) {
+        x <- as.numeric(x)
+        x[1]-x[2]}))
+    }
+  })
+  return(time_x_distance)
+}
+
+
+# Make calculations using comparisons to negative controls:
+# Time X Distance
+  df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
+sum_diff.to.NC.upper <- aggregate(df$phenotypic_value.diff.to.NC.upper, by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound
+colnames(sum_diff.to.NC.upper) <- c("Compound", "phenotypic_Marker", "phenotypic_value.diff.to.NC.upper.sum")
+sum_diff.to.NC.upper$time_x_distance <- sum_diff.to.NC.upper$phenotypic_value.diff.to.NC.upper.sum * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
+df <- merge(df, sum_diff.to.NC.upper, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
+
+## UPPER TIMEPOINT
+temp_ds <- confluency_sytoxG_data[97:192,]
+temp <- by(temp_ds, list(phenotypic_Marker = temp_ds$phenotypic_Marker, Compound = temp_ds$Compound), function(x) {
+  # Get the timepoint where:
+  # a) phenotype value exceeds upperbound of negative control confidence interval
+  phenotype_value_exceeds_NC_upperbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.upper > 0)] 
+  # b) phenotype value drops below lowerbound of negative control confidence interval
+  phenotype_value_falls_below_NC_lowerbound.timepoint <- x$time_elapsed[which(x$phenotypic_value.diff.to.NC.lower < 0)] 
+  timepoints <- list(phenotype_value_exceeds_NC_upperbound.timepoint[1], phenotype_value_falls_below_NC_lowerbound.timepoint[1])
+  return(timepoints)
+})

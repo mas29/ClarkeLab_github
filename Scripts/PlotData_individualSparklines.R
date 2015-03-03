@@ -17,8 +17,7 @@ ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         legend.key.height = unit(.85, "cm"),
         panel.background = element_rect(fill = "white"),
-        panel.margin = unit(.085, "cm"),
-        strip.background = element_rect(fill = "white"))
+        panel.margin = unit(.085, "cm"))
 
 #sytoxG sparklines - fill coloured by delta max-min
 ggplot(sytoxG_data, 
@@ -39,8 +38,7 @@ ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         legend.key.height = unit(.85, "cm"),
         panel.background = element_rect(fill = "white"),
-        panel.margin = unit(.085, "cm"),
-        strip.background = element_rect(fill = "white"))
+        panel.margin = unit(.085, "cm"))
 
 #sytoxG sparklines - fill coloured by AUC trapezoidal integration
 ggplot(sytoxG_data, 
@@ -61,5 +59,4 @@ ggplot(sytoxG_data,
         axis.ticks.length = unit(0, "cm"),
         legend.key.height = unit(.85, "cm"),
         panel.background = element_rect(fill = "white"),
-        panel.margin = unit(.085, "cm"),
-        strip.background = element_rect(fill = "white"))
+        panel.margin = unit(.085, "cm"))
