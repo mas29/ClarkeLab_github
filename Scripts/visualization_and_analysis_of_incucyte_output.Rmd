@@ -8,6 +8,16 @@ output:
 ---
 
 ```{r, echo=FALSE}
+# install.packages("ggplot2")
+# install.packages("grid")
+# install.packages("plyr")
+# install.packages("knitr")
+# install.packages("devtools")
+# install.packages("car")
+# install.packages("plotly")
+# install.packages("reshape2")
+# install.packages("gplots")
+# install.packages("RColorBrewer")
 library(ggplot2)
 library(grid)
 library(plyr)
