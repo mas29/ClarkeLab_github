@@ -130,7 +130,7 @@ ggplot(sytoxG_data_no_NC) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Time Point at which Compound Surpasses Negative Control Upperbound\n(Phenotypic Marker: Sytox Green)") +
+  ggtitle("Time Point at which Compound Surpasses Negative Control\n(Phenotypic Marker: Sytox Green)") +
   geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
@@ -150,7 +150,7 @@ ggplot(confluency_data_no_NC) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
-  ggtitle("Time Point at which Compound Drops Below Negative Control Lowerbound\n(Phenotypic Marker: Confluency)") +
+  ggtitle("Time Point at which Compound Drops Below Negative Control\n(Phenotypic Marker: Confluency)") +
   geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                          fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
