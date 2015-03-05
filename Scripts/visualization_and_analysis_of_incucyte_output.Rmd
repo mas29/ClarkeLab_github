@@ -7,6 +7,8 @@ output:
     keep_md: yes
 ---
 
+
+
 ```{r, echo=FALSE}
 # install.packages("ggplot2")
 # install.packages("grid")
@@ -20,6 +22,7 @@ output:
 # install.packages("RColorBrewer")
 library(ggplot2)
 library(grid)
+library(gridExtra)
 library(plyr)
 library(knitr)
 library(devtools)
@@ -38,7 +41,23 @@ load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
 sm_ds <- sytoxG_data[1:2408,]
+
+# Number of time intervals
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
+
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get rid of negative control data
+sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
+confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
 ```
+
+```{r setup, include=FALSE}
+opts_chunk$set(out.width='1000px', dpi=200)
+```
+
 Quality Control
 =============
 
@@ -183,6 +202,53 @@ Pathway analysis
 
 Sparklines by Pathway
 ------------------------
+
+Compared to negative controls:
+
+```{r, echo=FALSE}
+
+# SG
+ggplot(sytoxG_data_no_NC) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative\nControl')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank(),
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical")
+
+# Confluency
+ggplot(confluency_data_no_NC) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                             fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative\nControl')) +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank(),
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical")
+```
+
+In Plotly:
 
 ```{r, eval=FALSE, echo=FALSE} 
 plot <- ggplot(sytoxG_data, 
@@ -343,18 +409,7 @@ for(i in 1:num_clusters) {
 Comparison to Negative Controls
 ================
 
-```{r}
-# Number of time intervals
-num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
-
-# Confidence interval bounds
-confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-
-# Get rid of negative control sparklines
-sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
-confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
-
+```{r, echo=FALSE}
 # Plot SG
 ggplot(sytoxG_data_no_NC) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
@@ -365,11 +420,13 @@ ggplot(sytoxG_data_no_NC) +
                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative Control')) +
+                    labels = c('Negative\nControl')) +
   facet_wrap(~phenotype_value_exceeds_NC_upperbound.timepoint, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white")) 
+        panel.background = element_rect(fill = "white"),
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical") 
 
 # Plot confluency
 ggplot(confluency_data_no_NC) +
@@ -381,26 +438,69 @@ ggplot(confluency_data_no_NC) +
                                                          fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative Control')) +
+                    labels = c('Negative\nControl')) +
   facet_wrap(~phenotype_value_falls_below_NC_lowerbound.timepoint, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white"))
+        panel.background = element_rect(fill = "white"),
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical")
 ```
 
 Statistical Analyses
 ===================
 
-Normal Q-Q Plots
+Q-Q Plots
 --------------
 
 ```{r, echo=FALSE}
-delta_max_min <- scale(sytoxG_data_features$delta_min_max)
-qqnorm(delta_max_min, main="Normal Q-Q Plot for Sytox Green Delta (max-min)")
-qqline(delta_max_min)
-delta_max_min <- scale(confluency_data_features$delta_min_max)
-qqnorm(delta_max_min, main="Normal Q-Q Plot for Confluency Delta (max-min)")
-qqline(delta_max_min)
+# Function to extract legend
+# From: https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+
+# Get Q-Q Plot of the sample data for a particular feature (@param feature_name) against theoretical data with distribution (@param distribution)
+
+# @param df -- data frame of data with features 
+# @param feature_name -- name of feature whose distribution is in question
+# @param title -- main title for all plots
+get_qqplot <- function(df, feature_name, title) {
+  df$feature <- df[, colnames(df) == feature_name]
+  normal <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qnorm, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Normal Distribution") + theme(legend.position="bottom") 
+  lognormal <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qlnorm, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Lognormal Distribution") 
+  logistic <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qlogis, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Logistic Distribution") 
+  cauchy <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qcauchy, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Cauchy Distribution") 
+  unif <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qunif, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Uniform Distribution") 
+  mylegend<-g_legend(normal)
+  grid.arrange(arrangeGrob(
+    normal + theme(legend.position="none"), 
+    lognormal + theme(legend.position="none"), 
+    logistic + theme(legend.position="none"), 
+    cauchy + theme(legend.position="none"), 
+    unif + theme(legend.position="none"), 
+    ncol = 3), nrow = 2, heights=c(10, 1), main = title, mylegend)
+}
+
+# Plot Q-Q Plots for various metrics.
+
+get_qqplot(sytoxG_data_features, "delta_min_max", "Q-Q Plots for Sytox Green: Delta (max-min)")
+get_qqplot(confluency_data_features, "delta_min_max", "Q-Q Plots for Confluency: Delta (max-min)")
+
+get_qqplot(sytoxG_data_features, "time_to_max", "Q-Q Plots for Sytox Green: Time to Max")
+get_qqplot(confluency_data_features, "time_to_max", "Q-Q Plots for Confluency: Time to Max")
+
+# SG uses time x distance UPPER, Con uses time x distance LOWER
+get_qqplot(sytoxG_data_features, "time_x_distance.upper", "Q-Q Plots for Sytox Green: Time*Distance")
+get_qqplot(confluency_data_features, "time_x_distance.lower", "Q-Q Plots for Confluency: Time*Distance")
+
+get_qqplot(sytoxG_data_features, "M.w.", "Q-Q Plots for Sytox Green: Molecular Weight")
+get_qqplot(confluency_data_features, "M.w.", "Q-Q Plots for Confluency: Molecular Weight")
+
+get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Sytox Green: Molecular Weight")
+get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Confluency: Molecular Weight")
 ```
 
 At what time point do we see the first significant differences in phenotypic marker values? 
@@ -480,8 +580,13 @@ Sytox Green sparklines for the significant targets:
 
 ```{r,echo=FALSE}
 sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets %in% sig_targets_SG) , ]
-ggplot(sytoxG_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
-  geom_line() +
+ggplot(sytoxG_data_significant_targets_only) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                             fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative\nControl')) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle(paste("Sytox Green - Significant Targets (p < ", sig_level, ")",sep="")) +
@@ -490,7 +595,9 @@ ggplot(sytoxG_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=a
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4),
-        axis.text = element_blank())
+        axis.text = element_blank(),
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical")
 ```
 
 For Confluency:
@@ -510,8 +617,13 @@ Confluency sparklines for the significant targets:
 
 ```{r,echo=FALSE}
 confluency_data_significant_targets_only <- confluency_data[which(confluency_data$Targets %in% sig_targets_Con) , ]
-ggplot(confluency_data_significant_targets_only, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
-  geom_line() +
+ggplot(confluency_data_significant_targets_only) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                             fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative\nControl')) +
   xlab("Time Elapsed") +
   ylab("Confluency") +
   ggtitle(paste("Confluency - Significant Targets (p < ", sig_level, ")",sep="")) +
@@ -520,5 +632,7 @@ ggplot(confluency_data_significant_targets_only, aes(x=as.numeric(time_elapsed),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4),
-        axis.text = element_blank())
+        axis.text = element_blank(), 
+        legend.key.size = unit(0.4, "cm"),
+        legend.direction="vertical")
 ```

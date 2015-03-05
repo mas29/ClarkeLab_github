@@ -3,6 +3,8 @@ Maia Smith
 February 9, 2015  
 
 
+
+
 ```
 ## Warning: package 'knitr' was built under R version 3.1.2
 ```
@@ -48,6 +50,9 @@ February 9, 2015
 ```
 ## Warning: package 'RColorBrewer' was built under R version 3.1.2
 ```
+
+
+
 Quality Control
 =============
 
@@ -66,12 +71,12 @@ Compare controls and treatments
 Compare plates for controls and treatments
 -----------------------------------------------
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-6-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-6-2.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-6-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-6-2.png" title="" alt="" width="1200px" />
 
 Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
 -----------------------------------------------
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-2.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-7-2.png" title="" alt="" width="1200px" />
 
 
 
@@ -80,6 +85,12 @@ Pathway analysis
 
 Sparklines by Pathway
 ------------------------
+
+Compared to negative controls:
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-9-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-9-2.png" title="" alt="" width="1200px" />
+
+In Plotly:
 
 
 
@@ -107,70 +118,124 @@ Delta (max-min) values by Pathway
 Heatmap of metrics for all compounds (not negative controls) 
 =========
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-17-1.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-2.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-3.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-4.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-5.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-6.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-7.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-8.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-9.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-10.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-11.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-12.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-13.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-14.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-15.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-16.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-17.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-18.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-19.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-20.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-21.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-22.png" title="" alt="" width="1200px" />
 
 Comparison to Negative Controls
 ================
 
-
-```r
-# Number of time intervals
-num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
-
-# Confidence interval bounds
-confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-
-# Get rid of negative control sparklines
-sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
-confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
-
-# Plot SG
-ggplot(sytoxG_data_no_NC) +
-  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
-  xlab("Time Elapsed") +
-  ylab("Sytox Green") +
-  ggtitle("Time Point at which Compound Surpasses Negative Control\n(Phenotypic Marker: Sytox Green)") +
-  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
-                             fill = "red", colour = NULL), alpha = 0.6) +
-  scale_fill_manual(name = "Legend",
-                    values = c('red'),
-                    labels = c('Negative Control')) +
-  facet_wrap(~phenotype_value_exceeds_NC_upperbound.timepoint, scales = "fixed") +
-  theme(panel.grid = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white")) 
-```
-
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-1.png) 
-
-```r
-# Plot confluency
-ggplot(confluency_data_no_NC) +
-  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group = Compound), alpha = 0.6) +
-  xlab("Time Elapsed") +
-  ylab("Sytox Green") +
-  ggtitle("Time Point at which Compound Drops Below Negative Control\n(Phenotypic Marker: Confluency)") +
-  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
-                                                         fill = "red", colour = NULL), alpha = 0.6) +
-  scale_fill_manual(name = "Legend",
-                    values = c('red'),
-                    labels = c('Negative Control')) +
-  facet_wrap(~phenotype_value_falls_below_NC_lowerbound.timepoint, scales = "fixed") +
-  theme(panel.grid = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        panel.background = element_rect(fill = "white"))
-```
-
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-18-2.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-2.png" title="" alt="" width="1200px" />
 
 Statistical Analyses
 ===================
 
-Normal Q-Q Plots
+Q-Q Plots
 --------------
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-1.png) ![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-2.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-1.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-2.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-3.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-4.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-5.png" title="" alt="" width="1200px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-6.png" title="" alt="" width="1200px" />
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-7.png" title="" alt="" width="1200px" />
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-8.png" title="" alt="" width="1200px" />
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-9.png" title="" alt="" width="1200px" />
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+```
+## Warning: Removed 87 rows containing missing values (stat_qq).
+```
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-10.png" title="" alt="" width="1200px" />
 
 At what time point do we see the first significant differences in phenotypic marker values? 
 ------------------
@@ -349,7 +414,7 @@ For Sytox Green:
 
 Sytox Green sparklines for the significant targets:
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-25-1.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-26-1.png" title="" alt="" width="1200px" />
 
 For Confluency:
 
@@ -386,4 +451,4 @@ For Confluency:
 
 Confluency sparklines for the significant targets:
 
-![](visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-27-1.png) 
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-28-1.png" title="" alt="" width="1200px" />
