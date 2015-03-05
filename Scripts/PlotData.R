@@ -84,4 +84,3 @@ temp <- sytoxG_data %>%
 temp <- temp %>%
   arrange(Compound, phenotypic_Marker, time_elapsed)
 
-

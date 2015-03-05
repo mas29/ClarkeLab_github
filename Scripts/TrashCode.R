@@ -735,3 +735,21 @@ temp <- by(temp_ds, list(phenotypic_Marker = temp_ds$phenotypic_Marker, Compound
   timepoints <- list(phenotype_value_exceeds_NC_upperbound.timepoint[1], phenotype_value_falls_below_NC_lowerbound.timepoint[1])
   return(timepoints)
 })
+
+
+################ WORKING OUT KINKS ##########
+
+
+# To zoom into top portion:
+# Convert to a dendrogram object
+hor.dendro <- as.dendrogram(hr)
+# Get values for the first branch
+m.1 <- m[unlist(hor.dendro[[1]]),]
+
+# Draw heatmap.
+my_palette <- colorRampPalette(c("red", "white", "green"))(n = 299)
+heatmap.2(data_matrix, Rowv = TRUE, Colv = TRUE, symm = F, hclustfun = hclust, dendrogram = c("row"), cexCol=0.5, cexRow=0.1, col=my_palette, 
+          labCol=c("Time to Maximum", "Timepoint at which Sytox Green Value Exceeds Negative Control Upperbound", "Time X Distance to Negative Control Upperbound" ))
+
+x11(height=6, width=2); 
+x11();
