@@ -718,7 +718,7 @@ get_time_x_distance <- function(confidence_intervals_SG, confidence_intervals_co
 
 # Make calculations using comparisons to negative controls:
 # Time X Distance
-  df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
+df$phenotypic_value.diff.to.NC.upper <- df$phenotype_value - df$phenotype_value.NC.upper # Get difference to confidence interval's upper value for each timepoint
 sum_diff.to.NC.upper <- aggregate(df$phenotypic_value.diff.to.NC.upper, by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound
 colnames(sum_diff.to.NC.upper) <- c("Compound", "phenotypic_Marker", "phenotypic_value.diff.to.NC.upper.sum")
 sum_diff.to.NC.upper$time_x_distance <- sum_diff.to.NC.upper$phenotypic_value.diff.to.NC.upper.sum * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
@@ -753,3 +753,36 @@ heatmap.2(data_matrix, Rowv = TRUE, Colv = TRUE, symm = F, hclustfun = hclust, d
 
 x11(height=6, width=2); 
 x11();
+
+
+# Works:
+```{r setup, include=FALSE}
+opts_chunk$set(comment=NA, fig.width=26, fig.height=26)
+```
+
+```{r, echo=FALSE} 
+sm_ds <- sytoxG_data_no_NC[1:3400,]
+ggplot(sm_ds, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound)) +
+  geom_rect(data = sm_ds, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 43, scales = "fixed") +
+  labs(fill = "Delta\n(max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        axis.title.x = element_text(size = 20.5, angle = 00),
+        axis.title.y = element_text(size = 20.5, angle = 90),
+        title = element_text(size = 35, angle = 00),
+        legend.text = element_text(size = 20.5, angle = 00))
+```

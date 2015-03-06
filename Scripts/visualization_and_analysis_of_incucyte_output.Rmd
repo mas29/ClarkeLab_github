@@ -197,6 +197,62 @@ ggplot(sytoxG_data,
         panel.margin = unit(.085, "cm"))
 ```
 
+Sparklines for Each Compound 
+================
+
+```{r, echo=FALSE, fig.width=26, fig.height=26} 
+# No negative controls included.
+# SG
+ggplot(sytoxG_data_no_NC, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound)) +
+  geom_rect(data = sytoxG_data_no_NC, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 43, scales = "fixed") +
+  labs(fill = "Delta\n(max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        axis.title.x = element_text(size = 20.5, angle = 00),
+        axis.title.y = element_text(size = 20.5, angle = 90),
+       title = element_text(size = 35, angle = 00),
+        legend.text = element_text(size = 20.5, angle = 00))
+
+# SG
+ggplot(confluency_data_no_NC, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound)) +
+  geom_rect(data = confluency_data_no_NC, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  facet_wrap(~ Compound, ncol = 43, scales = "fixed") +
+  labs(fill = "Delta\n(max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"),
+        axis.title.x = element_text(size = 20.5, angle = 00),
+        axis.title.y = element_text(size = 20.5, angle = 90),
+       title = element_text(size = 35, angle = 00),
+        legend.text = element_text(size = 20.5, angle = 00))
+```
+
 Pathway analysis 
 ================
 

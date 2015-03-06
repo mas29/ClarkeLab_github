@@ -29,7 +29,25 @@ print(paste("The first significant time point for Confluency after the hour 0 is
 
 
 
-##### is there a significant difference between plates? ####
+##### is there a significant difference between plates? Use negative controls to figure out. ####
+# Get only negative controls
+data_no_NC <- sytoxG_data[sytoxG_data$empty == "Negative Control", c("Compound","Plate","time_elapsed", "phenotype_value")]
+data_no_NC$id <- paste(data_no_NC$Compound, "_t", data_no_NC$time_elapsed, sep="")
+
+# Get data matrix
+data_matrix <- as.data.frame(t(data_no_NC$phenotype_value))
+colnames(data_matrix) <- data_no_NC$id 
+
+# Get design matrix
+design <- data_no_NC
+
+# Get fit
+design_matrix <- model.matrix(~Plate + time_elapsed, design)
+library(limma)
+fit <- lmFit(data_matrix, design_matrix)
+fit <- eBayes(fit)
+topTable(fit)
+
 # design <- model.matrix(~Plate)
 # fit <- lmFit(??, design)
 # fit <- eBayes(fit)
@@ -168,3 +186,26 @@ print(sig_targets_Con[2:length(sig_targets_Con)])
 # fit_Con <- lm(phenotype_value ~ 0 + Plate + (time_elapsed + I(time_elapsed^2) + I(time_elapsed^3) + I(time_elapsed^4) + I(time_elapsed^5)), 
 #               data_for_stats, subset = phenotypic_Marker == "Con")
 # summary(fit_Con)
+
+
+# Get only negative controls
+data_no_NC <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$Pathway == "NegControl",]
+
+# Get data matrix
+start_index <- which(colnames(data_no_NC) == "0")
+end_index <- ncol(data_no_NC)
+data_matrix <- as.data.frame(t(data_no_NC[,c(start_index:end_index)]))
+colnames(data_matrix) <- data_no_NC$Compound
+
+# Get design matrix
+compound_index <- which(colnames(data_no_NC) == "Compound")
+plate_index <- which(colnames(data_no_NC) == "Plate")
+time_elapsed_index <- which(colnames(data_no_NC) == "time_elapsed")
+design <- data_no_NC[,c(compound_index, time_elapsed_index, plate_index)]
+
+# Get fit
+design_matrix <- model.matrix(~Plate + time_elapsed, design)
+library(limma)
+fit <- lmFit(data_matrix, design_matrix)
+fit <- eBayes(fit)
+topTable(fit)

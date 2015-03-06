@@ -50,8 +50,13 @@ March 5, 2015
 ```
 
 
-```r
-opts_chunk$set(comment=NA, fig.width=26, fig.height=26)
-```
-
 ![](Getting_Bricks_Plot_To_Work_files/figure-html/unnamed-chunk-2-1.png) 
+
+
+
+Quality Control
+=============
+
+Compare controls and treatments
+-----------------------------------------------
+
