@@ -227,7 +227,7 @@ ggplot(sytoxG_data_no_NC,
        title = element_text(size = 35, angle = 00),
         legend.text = element_text(size = 20.5, angle = 00))
 
-# SG
+# Confluency
 ggplot(confluency_data_no_NC, 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound)) +
@@ -236,8 +236,8 @@ ggplot(confluency_data_no_NC,
   scale_fill_gradient2(low = "red", mid = "white", high = "red",
                        midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
   xlab("Time Elapsed") +
-  ylab("Sytox Green") +
-  ggtitle("Sytox Green - Muscle Cells Over Time") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Muscle Cells Over Time") +
   facet_wrap(~ Compound, ncol = 43, scales = "fixed") +
   labs(fill = "Delta\n(max-min)") +
   theme(panel.grid = element_blank(),
@@ -264,7 +264,7 @@ Compared to negative controls:
 ```{r, echo=FALSE}
 
 # SG
-ggplot(sytoxG_data_no_NC) +
+ggplot(sytoxG_data) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
   geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                             fill = "red", colour = NULL), alpha = 0.6) +
@@ -284,7 +284,7 @@ ggplot(sytoxG_data_no_NC) +
         legend.direction="vertical")
 
 # Confluency
-ggplot(confluency_data_no_NC) +
+ggplot(confluency_data) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
   geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                              fill = "red", colour = NULL), alpha = 0.6) +
@@ -393,7 +393,7 @@ plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style
 ```
 `r I(plotly_iframe)`
 
-Heatmap of metrics for all compounds (not negative controls) 
+Heatmap of metrics for all compounds (not negative controls) using Sytox Green Data
 =========
 
 ```{r, echo=FALSE}
@@ -555,8 +555,8 @@ get_qqplot(confluency_data_features, "time_x_distance.lower", "Q-Q Plots for Con
 get_qqplot(sytoxG_data_features, "M.w.", "Q-Q Plots for Sytox Green: Molecular Weight")
 get_qqplot(confluency_data_features, "M.w.", "Q-Q Plots for Confluency: Molecular Weight")
 
-get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Sytox Green: Molecular Weight")
-get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Confluency: Molecular Weight")
+get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Sytox Green: Max.Solubility.in.DMSO")
+get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Confluency: Max.Solubility.in.DMSO")
 ```
 
 At what time point do we see the first significant differences in phenotypic marker values? 
