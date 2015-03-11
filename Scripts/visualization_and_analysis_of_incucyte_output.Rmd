@@ -40,6 +40,7 @@ load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
 load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
 load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
 sm_ds <- sytoxG_data[1:2408,]
 
 # Number of time intervals
@@ -270,7 +271,7 @@ ggplot(sytoxG_data) +
                                                             fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle("Sytox Green - Facets: Pathway") +
@@ -290,7 +291,7 @@ ggplot(confluency_data) +
                                                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   xlab("Time Elapsed") +
   ylab("Confluency") +
   ggtitle("Confluency - Facets: Pathway") +
@@ -476,7 +477,7 @@ ggplot(sytoxG_data_no_NC) +
                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   facet_wrap(~phenotype_value_exceeds_NC_upperbound.timepoint, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
@@ -494,13 +495,64 @@ ggplot(confluency_data_no_NC) +
                                                          fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   facet_wrap(~phenotype_value_falls_below_NC_lowerbound.timepoint, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
         legend.key.size = unit(0.4, "cm"),
         legend.direction="vertical")
+```
+
+Cluster Analysis
+============
+
+```{r}
+# Parameters
+start_index <- which(colnames(confluency_sytoxG_data_prelim_proc) == "0")
+end_index <- which(colnames(confluency_sytoxG_data_prelim_proc) == "46")
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed)) # Number of time intervals
+num_clusters <- 12
+
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get Sytox Green raw time series data only, for all compounds (including negative controls)
+data_for_heatmap <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$phenotypic_Marker == "SG", start_index:end_index]
+rownames(data_for_heatmap) <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$phenotypic_Marker == "SG",]$Compound
+data_matrix <- as.matrix(data_for_heatmap)
+
+# Get distances (Euclidean) and clusters
+distMatrix <- dist(data_matrix, method="euclidean")
+hr <- hclust(distMatrix, method="average")
+
+# Cut the tree and create color vector for clusters.
+mycl <- cutree(hr, k = num_clusters) # Clusters assigned to each compound.
+mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9)
+mycolhc <- mycolhc[as.vector(mycl)] 
+
+# Plot all clusters
+compound_clusters <- as.data.frame(mycl)
+colnames(compound_clusters) <- "cluster"
+compound_clusters$cluster <- as.factor(compound_clusters$cluster)
+sytoxG_data_w_clusters <- merge(sytoxG_data, compound_clusters, by.x="Compound", by.y="row.names")
+
+ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
 ```
 
 Statistical Analyses
@@ -523,7 +575,7 @@ g_legend<-function(a.gplot){
 # @param df -- data frame of data with features 
 # @param feature_name -- name of feature whose distribution is in question
 # @param title -- main title for all plots
-get_qqplot <- function(df, feature_name, title) {
+get_qqplot_sample_theoretical <- function(df, feature_name, title) {
   df$feature <- df[, colnames(df) == feature_name]
   normal <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qnorm, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Normal Distribution") + theme(legend.position="bottom") 
   lognormal <- ggplot(df, aes(sample = scale(feature))) + stat_qq(distribution = qlnorm, aes(colour = empty)) + geom_abline(intercept=0, slope=1) + ggtitle("Lognormal Distribution") 
@@ -542,21 +594,21 @@ get_qqplot <- function(df, feature_name, title) {
 
 # Plot Q-Q Plots for various metrics.
 
-get_qqplot(sytoxG_data_features, "delta_min_max", "Q-Q Plots for Sytox Green: Delta (max-min)")
-get_qqplot(confluency_data_features, "delta_min_max", "Q-Q Plots for Confluency: Delta (max-min)")
+get_qqplot_sample_theoretical(sytoxG_data_features, "delta_min_max", "Q-Q Plots for Sytox Green: Delta (max-min)")
+get_qqplot_sample_theoretical(confluency_data_features, "delta_min_max", "Q-Q Plots for Confluency: Delta (max-min)")
 
-get_qqplot(sytoxG_data_features, "time_to_max", "Q-Q Plots for Sytox Green: Time to Max")
-get_qqplot(confluency_data_features, "time_to_max", "Q-Q Plots for Confluency: Time to Max")
+get_qqplot_sample_theoretical(sytoxG_data_features, "time_to_max", "Q-Q Plots for Sytox Green: Time to Max")
+get_qqplot_sample_theoretical(confluency_data_features, "time_to_max", "Q-Q Plots for Confluency: Time to Max")
 
 # SG uses time x distance UPPER, Con uses time x distance LOWER
-get_qqplot(sytoxG_data_features, "time_x_distance.upper", "Q-Q Plots for Sytox Green: Time*Distance")
-get_qqplot(confluency_data_features, "time_x_distance.lower", "Q-Q Plots for Confluency: Time*Distance")
+get_qqplot_sample_theoretical(sytoxG_data_features, "time_x_distance.upper", "Q-Q Plots for Sytox Green: Time*Distance")
+get_qqplot_sample_theoretical(confluency_data_features, "time_x_distance.lower", "Q-Q Plots for Confluency: Time*Distance")
 
-get_qqplot(sytoxG_data_features, "M.w.", "Q-Q Plots for Sytox Green: Molecular Weight")
-get_qqplot(confluency_data_features, "M.w.", "Q-Q Plots for Confluency: Molecular Weight")
+get_qqplot_sample_theoretical(sytoxG_data_features, "M.w.", "Q-Q Plots for Sytox Green: Molecular Weight")
+get_qqplot_sample_theoretical(confluency_data_features, "M.w.", "Q-Q Plots for Confluency: Molecular Weight")
 
-get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Sytox Green: Max.Solubility.in.DMSO")
-get_qqplot(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Confluency: Max.Solubility.in.DMSO")
+get_qqplot_sample_theoretical(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Sytox Green: Molecular Weight")
+get_qqplot_sample_theoretical(sytoxG_data_features, "Max.Solubility.in.DMSO", "Q-Q Plots for Confluency: Molecular Weight")
 ```
 
 At what time point do we see the first significant differences in phenotypic marker values? 
@@ -642,7 +694,7 @@ ggplot(sytoxG_data_significant_targets_only) +
                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle(paste("Sytox Green - Significant Targets (p < ", sig_level, ")",sep="")) +
@@ -679,7 +731,7 @@ ggplot(confluency_data_significant_targets_only) +
                                                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
-                    labels = c('Negative\nControl')) +
+                    labels = c('Negative Control\n99.9% C.I.')) +
   xlab("Time Elapsed") +
   ylab("Confluency") +
   ggtitle(paste("Confluency - Significant Targets (p < ", sig_level, ")",sep="")) +

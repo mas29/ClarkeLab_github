@@ -90,7 +90,7 @@ Delta (max-min) values by Pathway
 
 <center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/235.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
 
-Heatmap of metrics for all compounds (not negative controls) 
+Heatmap of metrics for all compounds (not negative controls) using Sytox Green Data
 =========
 
 <img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-1.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-2.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-3.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-4.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-5.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-6.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-7.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-8.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-9.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-10.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-11.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-12.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-13.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-14.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-15.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-16.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-17.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-18.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-19.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-20.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-21.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-19-22.png" title="" alt="" width="1000px" />
@@ -100,13 +100,67 @@ Comparison to Negative Controls
 
 <img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-1.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-20-2.png" title="" alt="" width="1000px" />
 
+Cluster Analysis
+============
+
+
+```r
+# Parameters
+start_index <- which(colnames(confluency_sytoxG_data_prelim_proc) == "0")
+end_index <- which(colnames(confluency_sytoxG_data_prelim_proc) == "46")
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed)) # Number of time intervals
+num_clusters <- 12
+
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get Sytox Green raw time series data only, for all compounds (including negative controls)
+data_for_heatmap <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$phenotypic_Marker == "SG", start_index:end_index]
+rownames(data_for_heatmap) <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$phenotypic_Marker == "SG",]$Compound
+data_matrix <- as.matrix(data_for_heatmap)
+
+# Get distances (Euclidean) and clusters
+distMatrix <- dist(data_matrix, method="euclidean")
+hr <- hclust(distMatrix, method="average")
+
+# Cut the tree and create color vector for clusters.
+mycl <- cutree(hr, k = num_clusters) # Clusters assigned to each compound.
+mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9)
+mycolhc <- mycolhc[as.vector(mycl)] 
+
+# Plot all clusters
+compound_clusters <- as.data.frame(mycl)
+colnames(compound_clusters) <- "cluster"
+compound_clusters$cluster <- as.factor(compound_clusters$cluster)
+sytoxG_data_w_clusters <- merge(sytoxG_data, compound_clusters, by.x="Compound", by.y="row.names")
+
+ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+```
+
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-1.png" title="" alt="" width="1000px" />
+
 Statistical Analyses
 ===================
 
 Q-Q Plots
 --------------
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-1.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-2.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-3.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-4.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-5.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-6.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-1.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-2.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-3.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-4.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-5.png" title="" alt="" width="1000px" /><img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-6.png" title="" alt="" width="1000px" />
 
 ```
 ## Warning: Removed 87 rows containing missing values (stat_qq).
@@ -132,7 +186,7 @@ Q-Q Plots
 ## Warning: Removed 87 rows containing missing values (stat_qq).
 ```
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-7.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-7.png" title="" alt="" width="1000px" />
 
 ```
 ## Warning: Removed 87 rows containing missing values (stat_qq).
@@ -158,7 +212,7 @@ Q-Q Plots
 ## Warning: Removed 87 rows containing missing values (stat_qq).
 ```
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-8.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-8.png" title="" alt="" width="1000px" />
 
 ```
 ## Warning: Removed 87 rows containing missing values (stat_qq).
@@ -184,7 +238,7 @@ Q-Q Plots
 ## Warning: Removed 87 rows containing missing values (stat_qq).
 ```
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-9.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-9.png" title="" alt="" width="1000px" />
 
 ```
 ## Warning: Removed 87 rows containing missing values (stat_qq).
@@ -210,7 +264,7 @@ Q-Q Plots
 ## Warning: Removed 87 rows containing missing values (stat_qq).
 ```
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-21-10.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-22-10.png" title="" alt="" width="1000px" />
 
 At what time point do we see the first significant differences in phenotypic marker values? 
 ------------------
@@ -389,7 +443,7 @@ For Sytox Green:
 
 Sytox Green sparklines for the significant targets:
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-27-1.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-28-1.png" title="" alt="" width="1000px" />
 
 For Confluency:
 
@@ -426,4 +480,4 @@ For Confluency:
 
 Confluency sparklines for the significant targets:
 
-<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-29-1.png" title="" alt="" width="1000px" />
+<img src="visualization_and_analysis_of_incucyte_output_files/figure-html/unnamed-chunk-30-1.png" title="" alt="" width="1000px" />
