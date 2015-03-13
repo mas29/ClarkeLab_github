@@ -1,5 +1,5 @@
-install.packages("shiny")
-library()
+# install.packages("shiny")
+library(shiny)
 system.file("examples", package="shiny")
 runExample("01_hello") # a histogram
 runExample("02_text") # tables and data frames
@@ -14,6 +14,7 @@ runExample("10_download") # file download wizard
 runExample("11_timer") # an automated timer
 
 
-runApp("/Users/mas29/Desktop/myApp1")
+runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/myApp1")
+runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/temp_sparklines")
 
 # Check out: http://rmarkdown.rstudio.com/authoring_shiny.html for integration with RMarkdown

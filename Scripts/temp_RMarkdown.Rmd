@@ -1,0 +1,205 @@
+---
+title: "temp_RMarkdown"
+author: "Maia Smith"
+date: "March 12, 2015"
+output:
+html_document:
+runtime: shiny
+keep_md: yes
+---
+
+```{r, echo=FALSE, warnings=FALSE}
+# install.packages("ggplot2")
+# install.packages("grid")
+# install.packages("plyr")
+# install.packages("knitr")
+# install.packages("devtools")
+# install.packages("car")
+# install.packages("plotly")
+# install.packages("reshape2")
+# install.packages("gplots")
+# install.packages("RColorBrewer")
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(plyr)
+library(knitr)
+library(devtools)
+library(car)
+library(plotly)
+library(reshape2)
+library(gplots)
+library(RColorBrewer)
+py <- plotly("mas29", "8s6jru0os3")
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+#dir = "/Users/mas29/Documents/ClarkeLab_github/"
+load(file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
+load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+sm_ds <- sytoxG_data[1:2408,]
+
+# Number of time intervals
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
+
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get rid of negative control data
+sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
+confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
+```
+
+
+Compare plates for controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# compare sytoxG sparklines, faceted by plates, empty
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+
+
+Does this map work?
+----------
+
+```{r, echo=FALSE, fig.width=10, fig.height=13}
+# Function to extract legend
+# From: https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+
+# Get histogram for one metric
+
+# @param df -- data frame of data with metrics 
+# @param metric_name -- name of metric to explore
+get_single_metric_hist <- function(df, metric_name) {
+  # Distributions to compare
+  metric_NC <- df[df$empty == "Negative Control", colnames(df) == metric_name]
+  metric_Treatment <- df[df$empty == "Treatment", colnames(df) == metric_name]
+  
+  # Plot
+  plot <- ggplot() + 
+    # As density
+    geom_density(data = data.frame(metric_NC), aes(x = metric_NC, fill = 'Negative Control'), alpha = 0.5) + 
+    geom_density(data = data.frame(metric_Treatment), aes(x = metric_Treatment, fill = 'Treatment'), alpha = 0.5) + 
+    xlab(metric_name) +
+    guides(fill=guide_legend(title="Legend", direction="horizontal")) +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.key.width = unit(0.5, "cm")) 
+  
+  return(plot)
+  }
+
+# Get qqplot for one metric
+
+# @param df -- data frame of data with metrics 
+# @param metric_name -- name of metric to explore
+get_single_metric_qqplot <- function(df, metric_name) {
+  # Distributions to compare
+  metric_NC <- df[df$empty == "Negative Control", colnames(df) == metric_name]
+  metric_Treatment <- df[df$empty == "Treatment", colnames(df) == metric_name]
+  
+  # Calculated quantiles
+  q1 <- quantile(scale(metric_NC),0:100/100)
+  q2 <- quantile(scale(metric_Treatment),0:100/100)
+  
+  # Plot
+  plot <- ggplot(data=data.frame(a=q1,b=q2)) + 
+    geom_point(aes(x=a,y=b)) +
+    geom_abline(intercept=0,slope=1) +
+    theme_bw() +
+    xlab("Negative Control") +
+    ylab("Treatment") +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank()) 
+  
+  return(plot)
+  }
+
+# Get Q-Q Plot of the negative control sample quantiles for all features against non-negative control sample quantiles 
+
+# @param df -- data frame of data with metrics 
+# @param metric_var_names -- variable names in data frame for metrics we want to look at
+# @param metric_titles -- titles for each individual metric
+# @param main_title -- title for all graphs
+get_qq_hist_comparison <- function(df, metric_var_names, metric_titles, main_title) {
+  
+  num_metrics <- length(metric_var_names)
+  pushViewport(viewport(layout = grid.layout((num_metrics*2 + 2), 2, widths = unit(c(3,7), "null"), heights = unit(c(1, rep(c(1,4),num_metrics)), "null"))))
+  grid.text(main_title, vp = viewport(layout.pos.row = 1, layout.pos.col = 1:2))
+  
+  for (i in 1:num_metrics) {
+    # Get qq plot and get histogram for current metric
+    qq <- get_single_metric_qqplot(df, metric_var_names[i])
+    hist <- get_single_metric_hist(df, metric_var_names[i])
+    # Print title to both graphs and the graphs themselves
+    grid.text(metric_titles[i], vp = viewport(layout.pos.row = i*2, layout.pos.col = 1:2))
+    print(qq, vp = viewport(layout.pos.row = (i*2 + 1), layout.pos.col = 1))
+    print(hist + theme(legend.position="none"), vp = viewport(layout.pos.row = (i*2 + 1), layout.pos.col = 2))
+    }
+  
+  # Get legend
+  mylegend <- g_legend(get_single_metric_hist(df, metric_var_names[1]))
+  mylegend$vp$x <- unit(.8, 'npc')
+  mylegend$vp$y <- unit(.02, 'npc')
+  grid.draw(mylegend)
+  }
+
+# SG
+get_qq_hist_comparison(sytoxG_data_features, c("delta_min_max", "time_to_max", "time_x_distance.upper", "time_to_most_positive_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+                       c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Positive Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Sytox Green Metrics - Q-Q Plot & Histogram")
+```
+
+```{r, echo=FALSE, fig.width=10, fig.height=13}
+# Confluency
+get_qq_hist_comparison(confluency_data_features, c("delta_min_max", "time_to_max", "time_x_distance.lower", "time_to_most_negative_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+                       c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Negative Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Confluency Metrics - Q-Q Plot & Histogram")
+
+```
+
+
+
+
+Compare plates for controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# compare sytoxG sparklines, faceted by plates, empty
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+
+

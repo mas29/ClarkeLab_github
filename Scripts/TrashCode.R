@@ -858,4 +858,87 @@ if(neg_controls) { # INCLUDE negative controls
                                                          start_index:end_index]
   rownames(data_for_heatmap) <- confluency_sytoxG_data_prelim_proc[confluency_sytoxG_data_prelim_proc$Pathway != "NegControl" 
                                                                    & confluency_sytoxG_data_prelim_proc$phenotypic_Marker == "SG",]$Compound
+  
 }
+
+get_single_feature_hist <- function(df, feature_name) {
+  # Distributions to compare
+  feature_NC <- df[df$empty == "Negative Control", colnames(df) == feature_name]
+  feature_Treatment <- df[df$empty == "Treatment", colnames(df) == feature_name]
+  
+  # Plot
+  plot <- ggplot() + 
+    # As density
+    geom_density(data = data.frame(feature_NC), aes(x = feature_NC, fill = 'Negative Control'), alpha = 0.5) + 
+    geom_density(data = data.frame(feature_Treatment), aes(x = feature_Treatment, fill = 'Treatment'), alpha = 0.5) + 
+    # Or as histogram
+    #       geom_histogram(aes(x = feature_NC, y=..count../sum(..count..), fill = 'red'), alpha = 0.5) + 
+    #       geom_histogram(aes(x = feature_Treatment, y=..count../sum(..count..), fill = 'black'), alpha = 0.5) + 
+    xlab(feature_name) +
+    ggtitle(feature_name) + 
+    guides(fill=guide_legend(title="Legend", direction="horizontal")) +
+    theme(axis.line = element_line(colour = "black"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          legend.key.width = unit(0.5, "cm")) 
+  
+  return(plot)
+}
+
+# Works but hardcoded :(
+
+# Get Q-Q Plot of the negative control sample quantiles for all metrics against non-negative control sample quantiles 
+
+# @param df -- data frame of data with metrics 
+get_qqplot_sample_sample <- function(df) {
+  
+  delta_min_max_qq <- get_single_metric_qqplot(df, "delta_min_max")
+  delta_min_max_hist <- get_single_metric_hist(df, "delta_min_max")
+  time_to_max_qq <- get_single_metric_qqplot(df, "time_to_max")
+  time_to_max_hist <- get_single_metric_hist(df, "time_to_max")
+  time_x_distance.upper_qq <- get_single_metric_qqplot(df, "time_x_distance.upper")
+  time_x_distance.upper_hist <- get_single_metric_hist(df, "time_x_distance.upper")
+  time_to_most_positive_slope_qq <- get_single_metric_qqplot(df, "time_to_most_positive_slope")
+  time_to_most_positive_slope_hist <- get_single_metric_hist(df, "time_to_most_positive_slope")
+  mean_qq <- get_single_metric_qqplot(df, "mean")
+  mean_hist <- get_single_metric_hist(df, "mean")
+  min_qq <- get_single_metric_qqplot(df, "min")
+  min_hist <- get_single_metric_hist(df, "min")
+  AUC_trapezoidal_integration_qq <- get_single_metric_qqplot(df, "AUC_trapezoidal_integration")
+  AUC_trapezoidal_integration_hist <- get_single_metric_hist(df, "AUC_trapezoidal_integration")
+  
+  mylegend<-g_legend(delta_min_max_hist)
+  
+  pushViewport(viewport(layout = grid.layout(15, 2, widths = unit(c(3,7), "null"), heights = unit(c(1, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4), "null"))))
+  grid.text("Sytox Green Metrics - Q-Q Plot & Histogram", vp = viewport(layout.pos.row = 1, layout.pos.col = 1:2))
+  grid.text("Delta (max-min)", vp = viewport(layout.pos.row = 2, layout.pos.col = 1:2))
+  print(delta_min_max_qq, vp = viewport(layout.pos.row = 3, layout.pos.col = 1))
+  print(delta_min_max_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 3, layout.pos.col = 2))
+  grid.text("Time To Max", vp = viewport(layout.pos.row = 4, layout.pos.col = 1:2))
+  print(time_to_max_qq, vp = viewport(layout.pos.row = 5, layout.pos.col = 1))
+  print(time_to_max_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 5, layout.pos.col = 2))
+  grid.text("Time*Distance", vp = viewport(layout.pos.row = 6, layout.pos.col = 1:2))
+  print(time_x_distance.upper_qq, vp = viewport(layout.pos.row = 7, layout.pos.col = 1))
+  print(time_x_distance.upper_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 7, layout.pos.col = 2))
+  grid.text("Time To Most Positive Slope", vp = viewport(layout.pos.row = 8, layout.pos.col = 1:2))
+  print(time_to_most_positive_slope_qq, vp = viewport(layout.pos.row = 9, layout.pos.col = 1))
+  print(time_to_most_positive_slope_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 9, layout.pos.col = 2))
+  grid.text("Mean", vp = viewport(layout.pos.row = 10, layout.pos.col = 1:2))
+  print(mean_qq, vp = viewport(layout.pos.row = 11, layout.pos.col = 1))
+  print(mean_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 11, layout.pos.col = 2))
+  grid.text("Min", vp = viewport(layout.pos.row = 12, layout.pos.col = 1:2))
+  print(min_qq, vp = viewport(layout.pos.row = 13, layout.pos.col = 1))
+  print(min_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 13, layout.pos.col = 2))
+  grid.text("AUC (trapezoidal integration)", vp = viewport(layout.pos.row = 14, layout.pos.col = 1:2))
+  print(AUC_trapezoidal_integration_qq, vp = viewport(layout.pos.row = 15, layout.pos.col = 1))
+  print(AUC_trapezoidal_integration_hist + theme(legend.position="none"), vp = viewport(layout.pos.row = 15, layout.pos.col = 2))
+  
+}
+
+# Plot Q-Q Plots and Densityplots for various metrics - SAMPLE VS THEORETICAL
+get_qqplot_sample_sample(sytoxG_data_features)
+
+# Making function dynamic!!!!
+

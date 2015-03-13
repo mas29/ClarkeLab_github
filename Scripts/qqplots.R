@@ -3,7 +3,11 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 
+dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+#dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
+load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
 
 # Function to extract legend
 # From: https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
@@ -35,25 +39,21 @@ get_qqplot_sample_theoretical <- function(df, feature_name, title) {
     ncol = 3), nrow = 2, heights=c(10, 1), main = title, mylegend)
 }
 
-# Get histogram for one feature
+# Get histogram for one metric
 
-# @param df -- data frame of data with features 
-# @param feature_name -- name of feature to explore
-get_single_feature_hist <- function(df, feature_name) {
+# @param df -- data frame of data with metrics 
+# @param metric_name -- name of metric to explore
+get_single_metric_hist <- function(df, metric_name) {
   # Distributions to compare
-  feature_NC <- df[df$empty == "Negative Control", colnames(df) == feature_name]
-  feature_Treatment <- df[df$empty == "Treatment", colnames(df) == feature_name]
+  metric_NC <- df[df$empty == "Negative Control", colnames(df) == metric_name]
+  metric_Treatment <- df[df$empty == "Treatment", colnames(df) == metric_name]
   
   # Plot
   plot <- ggplot() + 
     # As density
-    geom_density(data = data.frame(feature_NC), aes(x = feature_NC, fill = 'Negative Control'), alpha = 0.5) + 
-    geom_density(data = data.frame(feature_Treatment), aes(x = feature_Treatment, fill = 'Treatment'), alpha = 0.5) + 
-    # Or as histogram
-    #       geom_histogram(aes(x = feature_NC, y=..count../sum(..count..), fill = 'red'), alpha = 0.5) + 
-    #       geom_histogram(aes(x = feature_Treatment, y=..count../sum(..count..), fill = 'black'), alpha = 0.5) + 
-    xlab(feature_name) +
-    ggtitle(feature_name) + 
+    geom_density(data = data.frame(metric_NC), aes(x = metric_NC, fill = 'Negative Control'), alpha = 0.5) + 
+    geom_density(data = data.frame(metric_Treatment), aes(x = metric_Treatment, fill = 'Treatment'), alpha = 0.5) + 
+    xlab(metric_name) +
     guides(fill=guide_legend(title="Legend", direction="horizontal")) +
     theme(axis.line = element_line(colour = "black"),
           panel.grid.major = element_blank(),
@@ -65,25 +65,24 @@ get_single_feature_hist <- function(df, feature_name) {
   return(plot)
 }
 
-# Get qqplot for one feature
+# Get qqplot for one metric
 
-# @param df -- data frame of data with features 
-# @param feature_name -- name of feature to explore
-get_single_feature_qqplot <- function(df, feature_name) {
+# @param df -- data frame of data with metrics 
+# @param metric_name -- name of metric to explore
+get_single_metric_qqplot <- function(df, metric_name) {
   # Distributions to compare
-  feature_NC <- df[df$empty == "Negative Control", colnames(df) == feature_name]
-  feature_Treatment <- df[df$empty == "Treatment", colnames(df) == feature_name]
+  metric_NC <- df[df$empty == "Negative Control", colnames(df) == metric_name]
+  metric_Treatment <- df[df$empty == "Treatment", colnames(df) == metric_name]
   
   # Calculated quantiles
-  q1 <- quantile(scale(feature_NC),0:100/100)
-  q2 <- quantile(scale(feature_Treatment),0:100/100)
+  q1 <- quantile(scale(metric_NC),0:100/100)
+  q2 <- quantile(scale(metric_Treatment),0:100/100)
   
   # Plot
   plot <- ggplot(data=data.frame(a=q1,b=q2)) + 
     geom_point(aes(x=a,y=b)) +
     geom_abline(intercept=0,slope=1) +
     theme_bw() +
-    ggtitle(feature_name) +
     xlab("Negative Control") +
     ylab("Treatment") +
     theme(axis.line = element_line(colour = "black"),
@@ -97,42 +96,39 @@ get_single_feature_qqplot <- function(df, feature_name) {
 
 # Get Q-Q Plot of the negative control sample quantiles for all features against non-negative control sample quantiles 
 
-# @param df -- data frame of data with features 
-get_qqplot_sample_sample <- function(df) {
+# @param df -- data frame of data with metrics 
+# @param metric_var_names -- variable names in data frame for metrics we want to look at
+# @param metric_titles -- titles for each individual metric
+# @param main_title -- title for all graphs
+get_qq_hist_comparison <- function(df, metric_var_names, metric_titles, main_title) {
   
-  delta_min_max_qq <- get_single_feature_qqplot(df, "delta_min_max")
-  delta_min_max_hist <- get_single_feature_hist(df, "delta_min_max")
-  time_to_max_qq <- get_single_feature_qqplot(df, "time_to_max")
-  time_to_max_hist <- get_single_feature_hist(df, "time_to_max")
-  time_x_distance.upper_qq <- get_single_feature_qqplot(df, "time_x_distance.upper")
-  time_x_distance.upper_hist <- get_single_feature_hist(df, "time_x_distance.upper")
-  time_to_most_positive_slope_qq <- get_single_feature_qqplot(df, "time_to_most_positive_slope")
-  time_to_most_positive_slope_hist <- get_single_feature_hist(df, "time_to_most_positive_slope")
-  mean_qq <- get_single_feature_qqplot(df, "mean")
-  mean_hist <- get_single_feature_hist(df, "mean")
-  min_qq <- get_single_feature_qqplot(df, "min")
-  min_hist <- get_single_feature_hist(df, "min")
-  AUC_trapezoidal_integration_qq <- get_single_feature_qqplot(df, "AUC_trapezoidal_integration")
-  AUC_trapezoidal_integration_hist <- get_single_feature_hist(df, "AUC_trapezoidal_integration")
+  num_metrics <- length(metric_var_names)
+  pushViewport(viewport(layout = grid.layout((num_metrics*2 + 2), 2, widths = unit(c(3,7), "null"), heights = unit(c(1, rep(c(1,4),num_metrics)), "null"))))
+  grid.text(main_title, vp = viewport(layout.pos.row = 1, layout.pos.col = 1:2))
   
-  mylegend<-g_legend(delta_min_max_hist)
+  for (i in 1:num_metrics) {
+    # Get qq plot and get histogram for current metric
+    qq <- get_single_metric_qqplot(df, metric_var_names[i])
+    hist <- get_single_metric_hist(df, metric_var_names[i])
+    # Print title to both graphs and the graphs themselves
+    grid.text(metric_titles[i], vp = viewport(layout.pos.row = i*2, layout.pos.col = 1:2))
+    print(qq, vp = viewport(layout.pos.row = (i*2 + 1), layout.pos.col = 1))
+    print(hist + theme(legend.position="none"), vp = viewport(layout.pos.row = (i*2 + 1), layout.pos.col = 2))
+  }
   
-  grid.arrange(delta_min_max_qq, delta_min_max_hist + theme(legend.position="none"), 
-               time_to_max_qq, time_to_max_hist + theme(legend.position="none"), 
-               time_x_distance.upper_qq, time_x_distance.upper_hist + theme(legend.position="none"), 
-               time_to_most_positive_slope_qq, time_to_most_positive_slope_hist + theme(legend.position="none"), 
-               mean_qq, mean_hist + theme(legend.position="none"), 
-               min_qq, min_hist + theme(legend.position="none"), 
-               AUC_trapezoidal_integration_qq, AUC_trapezoidal_integration_hist + theme(legend.position="none"), 
-               ncol = 2, 
-               widths=c(4, 7), 
-               heights=c(rep(10,7),1),
-               main = "Sytox Green Metrics - Q-Q Plot & Histogram", 
-               mylegend)
-  
+  # Get legend
+  mylegend <- g_legend(get_single_metric_hist(df, metric_var_names[1]))
+  mylegend$vp$x <- unit(.8, 'npc')
+  mylegend$vp$y <- unit(.02, 'npc')
+  grid.draw(mylegend)
 }
 
-get_qqplot_sample_sample(sytoxG_data_features)
+get_qq_hist_comparison(sytoxG_data_features, c("delta_min_max", "time_to_max", "time_x_distance.upper", "time_to_most_positive_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+          c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Positive Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Sytox Green Metrics - Q-Q Plot & Histogram")
+get_qq_hist_comparison(confluency_data_features, c("delta_min_max", "time_to_max", "time_x_distance.lower", "time_to_most_negative_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+          c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Negative Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Confluency Metrics - Q-Q Plot & Histogram")
+get_qq_hist_comparison(sytoxG_data_features, c("delta_min_max"), c("Delta (max-min)"), "Sytox Green Metrics - Q-Q Plot & Histogram")
+
 
 # Plot Q-Q Plots for various metrics - SAMPLE VS THEORETICAL
 
