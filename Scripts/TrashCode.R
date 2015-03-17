@@ -942,3 +942,4 @@ get_qqplot_sample_sample(sytoxG_data_features)
 
 # Making function dynamic!!!!
 
+data_from_reconfigure[287:288,]

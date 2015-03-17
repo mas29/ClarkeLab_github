@@ -21,10 +21,9 @@ dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
 # dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
-# Data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
-# created by the _____ script
+# Data from my edit (1833Reconfigure2_ms_edits.R) of Giovanni's Reconfigure script (1833Reconfigure2.R)
 #!!!!!!!!!!!!!!!!!!!! replace filename of data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-data_file <- paste(dir,"Files/C2C12_tunicamycin_output.csv",sep="")
+data_file <- paste(dir,"Files/C2C12_tunicamycin_output_maia.csv",sep="")
 first_timepoint <- "0"
 last_timepoint <- "46"
 time_interval <- "2"
@@ -36,27 +35,30 @@ na_value <- 0.2320489
 #function to get the data formatted correctly, replace individual na_values, remove entirely NA rows, and other preliminary processing
 preliminary_processing <- function(df) {
   
-  confluency_data <- df[,c(1:42)]
-  sytoxG_data <- df[,c(1:15,43:ncol(df))]
+  confluency_data <- df[,c(1:which(colnames(df) == last_timepoint)[1])]
+  sytoxG_data <- df[,c(1:which(colnames(df) == "Screen"),which(colnames(df) == "phenotypic_Marker")[2]:ncol(df))]
   df <- rbind(confluency_data,sytoxG_data)
   df <- df[,colSums(is.na(df))<nrow(df)] #remove columns where ALL values are NA
-  df$Compound <- as.character(df$Compound) #required for changing Empty compound names to include plate & position
-  df[which(df$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
-    with(df, paste(Compound, Plate, Position, sep = "_"))[which(df$Compound == "Empty")]
-  df[18:41][is.na(df[18:41])] <- na_value #fill in NA values with na value specified (0.23, or 1/4 of a cell)
   
-  # Replace "NA" pathways with "NegControl"
+  # Add a "NegControl" pathway label
   df$Pathway <- as.character(df$Pathway)
-  df$Pathway[is.na(df$Pathway)] <- "NegControl"
+  df$Pathway[which(is.na(df$Pathway))] <- "NA" # Turn all NA's to "NA" as string, before turning some of these to "NegControl". Otherwise, errors occur. 
+  df$Pathway[which(df$Compound == "Empty")] <- "NegControl"
   df$Pathway <- as.factor(df$Pathway)
   df$Pathway <- relevel(df$Pathway, ref = "NegControl")
   
+  # Rename "empty" wells by appending their plate and position
+  df$Compound <- as.character(df$Compound) #required for changing Empty compound names to include plate & position
+  df[which(df$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
+    with(df, paste(Compound, Plate, Position, sep = "_"))[which(df$Compound == "Empty")]
+  df[which(colnames(df) == first_timepoint):which(colnames(df) == last_timepoint)][is.na(df[which(colnames(df) == first_timepoint):which(colnames(df) == last_timepoint)])] <- na_value #fill in NA values with na value specified (0.23, or 1/4 of a cell)
+
   # Remove invalid XML characters (ex. "\x95")
   df$Compound <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Compound) 
   df$Information <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Information) 
   df$Pathway <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Pathway) 
-  df$Targets <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Targets) 
-  
+  df$Targets..as.supplied. <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Targets..as.supplied.) 
+
   return(df)
 }
 
