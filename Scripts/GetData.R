@@ -58,7 +58,7 @@ preliminary_processing <- function(df) {
   df$Information <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Information) 
   df$Pathway <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Pathway) 
   df$Targets..as.supplied. <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Targets..as.supplied.) 
-
+  
   return(df)
 }
 
@@ -243,14 +243,21 @@ confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Con")
 sytoxG_data_features <- get_features(sytoxG_data)
 confluency_data_features <- get_features(confluency_data)
 
-# save
-save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
-save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
-save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
-save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
-save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
-save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+# Get number of time intervals
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
 
-# export to tsv
-# write.table(confluency_sytoxG_data, file = paste(dir,"DataOutput/confluency_sytoxG_data.tsv",sep=""), 
-#             append = FALSE, quote = FALSE, sep = "\t", eol = "\n", na = "NA", dec = ".", row.names = TRUE, col.names = NA)
+# Get confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Get rid of negative control data
+sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
+confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
+
+# save CAUSES FATAL ERROR!!!!!
+# save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
+# save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+# save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
+# save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+# save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
+# save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))

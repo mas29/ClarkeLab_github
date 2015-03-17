@@ -36,23 +36,9 @@ py <- plotly("mas29", "8s6jru0os3")
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
 #dir = "/Users/mas29/Documents/ClarkeLab_github/"
-load(file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
-load(file=paste(dir,"DataObjects/confluency_data.R",sep=""))
-load(file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
-load(file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
-load(file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
-load(file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
 
-# Number of time intervals
-num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
-
-# Confidence interval bounds
-confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-
-# Get rid of negative control data
-sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
-confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
+# Get data
+source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
 ```
 
 ```{r setup, include=FALSE}
@@ -347,6 +333,7 @@ exploreIndividualCompounds <- function() {
 
 exploreIndividualCompounds()
 ```
+
 Pathway analysis 
 ================
 
@@ -876,11 +863,11 @@ For Sytox Green:
 
 ```{r, echo=FALSE}
 # --> SG
-fit_SG <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "SG")
+fit_SG <- lm(AUC_trapezoidal_integration ~ Targets..as.supplied., data_for_stats, subset = phenotypic_Marker == "SG")
 summary <-  as.data.frame(summary(fit_SG)$coef)
 sig_level <- 1e-20
 sig_targets_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
-sig_targets_SG <- gsub("Targets","",sig_targets_SG)
+sig_targets_SG <- gsub("Targets..as.supplied.","",sig_targets_SG)
 print(paste("The following targets have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
 print(sig_targets_SG[2:length(sig_targets_SG)])
 ```
@@ -888,7 +875,7 @@ print(sig_targets_SG[2:length(sig_targets_SG)])
 Sytox Green sparklines for the significant targets:
 
 ```{r,echo=FALSE}
-sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets %in% sig_targets_SG) , ]
+sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets..as.supplied. %in% sig_targets_SG) , ]
 ggplot(sytoxG_data_significant_targets_only) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
   geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
@@ -899,7 +886,7 @@ ggplot(sytoxG_data_significant_targets_only) +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
   ggtitle(paste("Sytox Green - Significant Targets (p < ", sig_level, ")",sep="")) +
-  facet_wrap(~Targets, ncol=6, scales = "fixed") +
+  facet_wrap(~Targets..as.supplied., ncol=6, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
@@ -913,11 +900,11 @@ For Confluency:
 
 ```{r, echo=FALSE}
 # --> Con
-fit_Con <- lm(AUC_trapezoidal_integration ~ Targets, data_for_stats, subset = phenotypic_Marker == "Con")
+fit_Con <- lm(AUC_trapezoidal_integration ~ Targets..as.supplied., data_for_stats, subset = phenotypic_Marker == "Con")
 summary <-  as.data.frame(summary(fit_Con)$coef)
 sig_level <- 1e-20
 sig_targets_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
-sig_targets_Con <- gsub("Targets","",sig_targets_Con)
+sig_targets_Con <- gsub("Targets..as.supplied.","",sig_targets_Con)
 print(paste("The following targets have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
 print(sig_targets_Con[2:length(sig_targets_Con)])
 ```
@@ -925,7 +912,7 @@ print(sig_targets_Con[2:length(sig_targets_Con)])
 Confluency sparklines for the significant targets:
 
 ```{r,echo=FALSE}
-confluency_data_significant_targets_only <- confluency_data[which(confluency_data$Targets %in% sig_targets_Con) , ]
+confluency_data_significant_targets_only <- confluency_data[which(confluency_data$Targets..as.supplied. %in% sig_targets_Con) , ]
 ggplot(confluency_data_significant_targets_only) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
   geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
@@ -936,7 +923,7 @@ ggplot(confluency_data_significant_targets_only) +
   xlab("Time Elapsed") +
   ylab("Confluency") +
   ggtitle(paste("Confluency - Significant Targets (p < ", sig_level, ")",sep="")) +
-  facet_wrap(~Targets, ncol=6, scales = "fixed") +
+  facet_wrap(~Targets..as.supplied., ncol=6, scales = "fixed") +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
