@@ -8,8 +8,6 @@ output:
     keep_md: yes
 ---
 
-
-
 ```{r, echo=FALSE, warnings=FALSE}
 # install.packages("ggplot2")
 # install.packages("grid")
