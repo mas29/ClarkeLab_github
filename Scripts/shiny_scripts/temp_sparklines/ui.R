@@ -1,4 +1,5 @@
 library(shiny)
+# Have to put video in the www folder of this shiny app
 
 # Load files
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
@@ -33,7 +34,9 @@ shinyUI(fluidPage(
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("sparklines")
+      plotOutput("sparklines"),
+      h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
+                                          autoplay = NA, controls = "controls"))
     )
   )
 ))

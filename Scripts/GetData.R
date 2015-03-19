@@ -254,7 +254,7 @@ confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed
 sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
 confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
 
-# save CAUSES FATAL ERROR!!!!!
+# save 
 # save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
 # save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
 # save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))

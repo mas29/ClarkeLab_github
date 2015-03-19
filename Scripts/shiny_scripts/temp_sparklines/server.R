@@ -62,5 +62,6 @@ shinyServer(function(input, output) {
     else if (input$marker == "Confluency") {
       plot(confluency_data_no_NC.sub, confidence_intervals_Con, "Confluency", "(% area occupied by cells)", y_limits_Con, input$compound)
     }
+    
   })
 })
