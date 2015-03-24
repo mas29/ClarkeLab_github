@@ -30,6 +30,7 @@ library(plotly)
 library(reshape2)
 library(gplots)
 library(RColorBrewer)
+library(shiny)
 py <- plotly("mas29", "8s6jru0os3")
 dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"

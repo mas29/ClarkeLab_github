@@ -37,6 +37,8 @@ dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 
 # Get data
 source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
+
+data_for_stats <- confluency_sytoxG_data
 ```
 
 ```{r setup, include=FALSE}
@@ -475,7 +477,7 @@ plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style
 Heatmap of metrics for all compounds (not negative controls) using Sytox Green Data
 =========
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE}
 # Select metrics of interest, for all compounds (no negative controls)
 data_for_heatmap <- sytoxG_data_features[sytoxG_data_features$Pathway != "NegControl", 
                                          names(sytoxG_data_features) %in% c("time_x_distance.upper", "phenotype_value_exceeds_NC_upperbound.timepoint", "time_to_max")]
@@ -802,7 +804,6 @@ At what time point do we see the first significant differences in phenotypic mar
 In Sytox Green?
 
 ```{r, echo=FALSE}
-data_for_stats <- confluency_sytoxG_data
 
 # At what time point do we see the first significant differences in phenotypic marker values? 
 sig_level <- 0.05

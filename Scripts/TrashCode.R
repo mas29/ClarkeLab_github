@@ -943,3 +943,10 @@ get_qqplot_sample_sample(sytoxG_data_features)
 # Making function dynamic!!!!
 
 data_from_reconfigure[287:288,]
+
+for FILE in $(ls *.tif); do \
+for I in R G B; do \
+convert -channel $I -separate -format jpg $FILE $FILE-$I.jpg ; \
+done ; \
+done ; \ 
+rename s/\.tif\-/\-/ *.jpg
