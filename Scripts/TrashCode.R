@@ -950,3 +950,40 @@ convert -channel $I -separate -format jpg $FILE $FILE-$I.jpg ; \
 done ; \
 done ; \ 
 rename s/\.tif\-/\-/ *.jpg
+
+
+#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
+# dir = "/Users/mas29/Documents/ClarkeLab_github/"
+
+
+
+# save 
+# save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
+# save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
+# save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
+# save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
+# save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
+# save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))
+
+
+```{r, eval=FALSE, echo=FALSE}
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
+           group=Compound, text=Compound)) +
+  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_line() +
+  scale_fill_gradient2(low = "red", mid = "white", high = "red",
+                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time") +
+  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
+  labs(fill = "Delta (max-min)") +
+  theme(panel.grid = element_blank(),
+        strip.text=element_blank(),
+        axis.text = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        legend.key.height = unit(.85, "cm"),
+        panel.background = element_rect(fill = "white"),
+        panel.margin = unit(.085, "cm"))
+```

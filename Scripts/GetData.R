@@ -1,10 +1,3 @@
-# install.packages("xlsx")
-# install.packages("pracma")
-# install.packages("stringr")
-# install.packages("dplyr")
-# install.packages("tidyr")
-# install.packages("reshape")
-# install.packages("Rmisc")
 library(xlsx)
 library(stringr)
 library(plyr)
@@ -16,19 +9,8 @@ library(car)
 library(Rmisc)
 library(reshape2)
 
-#set parameters - various files
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
-# dir = "/Users/mas29/Documents/ClarkeLab_github/"
-
-# Data from my edit (1833Reconfigure2_ms_edits.R) of Giovanni's Reconfigure script (1833Reconfigure2.R)
-#!!!!!!!!!!!!!!!!!!!! replace filename of data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-data_file <- paste(dir,"Files/C2C12_tunicamycin_output_maia.csv",sep="")
-first_timepoint <- "0"
-last_timepoint <- "46"
-time_interval <- "2"
-phenotypic_markers <- c("SG", "Con") # phenotypic markers as they appear in the input data file
-na_value <- 0.2320489
+# Parameters in Configure.R script
+# source("Scripts/Configure.R")
 
 #FUNCTIONS
 
@@ -210,7 +192,7 @@ get_features <- function(df) {
 # load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
 # created by the _____ script
 #!!!!!!!!!!!!!!!!!!!! replace filename of data frame with the correct filename !!!!!!!!!!!!!!!!!!!
-data_from_reconfigure <- read.csv(file=data_file, header=T, check.names=F, row.names=1)
+data_from_reconfigure <- read.csv(file=data_filename, header=T, check.names=F, row.names=1)
 
 # preliminary processing on data
 confluency_sytoxG_data_prelim_proc <- preliminary_processing(data_from_reconfigure)
@@ -253,11 +235,3 @@ confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed
 # Get rid of negative control data
 sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
 confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
-
-# save 
-# save(confluency_sytoxG_data_prelim_proc, file=paste(dir,"DataObjects/confluency_sytoxG_data_prelim_proc.R",sep=""))
-# save(sytoxG_data, file=paste(dir,"DataObjects/sytoxG_data.R",sep=""))
-# save(confluency_data, file=paste(dir,"DataObjects/confluency_data.R",sep=""))
-# save(sytoxG_data_features, file=paste(dir,"DataObjects/sytoxG_data_features.R",sep=""))
-# save(confluency_data_features, file=paste(dir,"DataObjects/confluency_data_features.R",sep=""))
-# save(confluency_sytoxG_data, file=paste(dir,"DataObjects/confluency_sytoxG_data.R",sep=""))

@@ -15,6 +15,6 @@ runExample("11_timer") # an automated timer
 
 
 runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/myApp1")
-runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/temp_sparklines")
+runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/temp_sparklines", launch.browser = TRUE)
 
 # Check out: http://rmarkdown.rstudio.com/authoring_shiny.html for integration with RMarkdown

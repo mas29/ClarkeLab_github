@@ -20,5 +20,7 @@ cp *.jpg temp/.
 cd ./temp
 ffmpeg -r 5 -i image%03d.jpg -c:v libx264 -vf fps=25 -pix_fmt yuv420p video.mp4
 
+
+# these don't work...
 -f image2 -r 25 -i image%03d.tif movie.mpg
 ffmpeg -i image%03d.png -c:v huffyuv test.avi

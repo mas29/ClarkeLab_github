@@ -5,6 +5,9 @@ library(XLConnect)
 library(gdata)
 library(dataframes2xls)
 
+# Parameters set in Configure.R script
+# source("Scripts/Configure.R")
+
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if you are using different phenotypic markers than the ones listed below, change these names in the order which they appear
@@ -51,7 +54,7 @@ getScreenName <- function(){
 #Using a key I created that has each of the 5 384-well plates on a different tab in an excel file, this function
 #lists all of the names of the compounds in an order that goes from plate 1-5 a1-a24, b1-b24...p1-p24.
 reconfigureCompoundNames <- function() {
-  cmpNameKey <- loadWorkbook("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx")
+  cmpNameKey <- loadWorkbook(key_filename)
   tempList <- list()
   LIST = readWorksheet(cmpNameKey, sheet = getSheets(cmpNameKey))
   tempList[1] = list(LIST)
@@ -150,7 +153,7 @@ getDescriptions<- function(){
   
   descriptionVector <- list()
   
-  descriptionKey <- read.xls("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/Selleck_1833_LibraryAnnotation_Mar15.xlsx",sheet=1)
+  descriptionKey <- read.xls(selleck_info_filename,sheet=1)
   descriptionKey <- data.frame(descriptionKey)
   #	print(descriptionKey)
   
@@ -211,7 +214,7 @@ getRawData <- function(){
   
   dataList <- list()
   
-  wb <- loadWorkbook("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx")
+  wb <- loadWorkbook(raw_data_filename)
   LIST = readWorksheet(wb, sheet = getSheets(wb), startRow = 8)
   dataList[1] <- list(LIST)
   
@@ -295,7 +298,7 @@ toXL <- combine()
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #change the name of the file to anything you want.
 #print(toXL)
-write.csv(toXL,file = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_tunicamycin_output_maia.csv")
+write.csv(toXL,file = data_filename)
 
 
 

@@ -9,16 +9,6 @@ output:
 ---
 
 ```{r, echo=FALSE, warnings=FALSE}
-# install.packages("ggplot2")
-# install.packages("grid")
-# install.packages("plyr")
-# install.packages("knitr")
-# install.packages("devtools")
-# install.packages("car")
-# install.packages("plotly")
-# install.packages("reshape2")
-# install.packages("gplots")
-# install.packages("RColorBrewer")
 library(ggplot2)
 library(grid)
 library(gridExtra)
@@ -31,9 +21,6 @@ library(reshape2)
 library(gplots)
 library(RColorBrewer)
 py <- plotly("mas29", "8s6jru0os3")
-dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
-#dir = "C:/Users/Dave/Documents/SFU job/Lab - muscle signaling/Dixon - myocyte expts/Maia Smith files/ClarkeLab_github/"
-#dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
 # Get data
 source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
@@ -160,28 +147,6 @@ ggplot(con_mean_sd_empty,
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white")) 
-```
-
-```{r, eval=FALSE, echo=FALSE}
-ggplot(sytoxG_data, 
-       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
-           group=Compound, text=Compound)) +
-  geom_rect(data = sytoxG_data, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
-  geom_line() +
-  scale_fill_gradient2(low = "red", mid = "white", high = "red",
-                       midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
-  xlab("Time Elapsed") +
-  ylab("Sytox Green") +
-  ggtitle("Sytox Green Over Time") +
-  facet_wrap(~ Compound, ncol = 44, scales = "fixed") +
-  labs(fill = "Delta (max-min)") +
-  theme(panel.grid = element_blank(),
-        strip.text=element_blank(),
-        axis.text = element_blank(),
-        axis.ticks.length = unit(0, "cm"),
-        legend.key.height = unit(.85, "cm"),
-        panel.background = element_rect(fill = "white"),
-        panel.margin = unit(.085, "cm"))
 ```
 
 Sparklines for Each Compound 

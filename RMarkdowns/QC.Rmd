@@ -1,0 +1,127 @@
+---
+title: "Quality Control"
+author: "Maia Smith"
+date: "March 24, 2015"
+output:
+  html_document:
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+opts_chunk$set(out.width='1000px', dpi=200)
+```
+
+Quality Control
+=============
+
+Note: To get the hover information working correctly on Plotly graphs (the interactive graphs), do the following: 
+1. Hover anywhere over graph
+2. You'll see icons appear at the top right-hand corner of the graph
+3. Select the icon for "Show closest data on hover"
+
+Compare controls and treatments
+-----------------------------------------------
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Over Time - Control vs Treatment") +
+  facet_grid(~empty, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"), 
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_control_vs_treatment", fileopt="overwrite"))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
+    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+Compare plates for controls and treatments
+-----------------------------------------------
+
+```{r, echo=FALSE}
+# compare sytoxG sparklines, faceted by plates, empty
+ggplot(sytoxG_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+
+# compare confluency sparklines, faceted by plates, empty
+ggplot(confluency_data, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Over Time - By Plate") +
+  facet_grid(empty ~ Plate, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"))
+```
+
+Compare sparklines for each plate, controls vs treatments, with mean and sd for each plate and control/treatment
+-----------------------------------------------
+
+```{r, echo=FALSE}
+#sytoxG - calculate mean and sd values for each plate, empty vs not empty
+sytoxG_mean_sd_empty <- ddply(sytoxG_data, ~ Plate * time_elapsed * empty, summarize,
+                              mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#sytoxG - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(sytoxG_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green Mean & SD") +
+  scale_colour_discrete(name="Plate") +
+  ggtitle("Sytox Green\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+
+#confluency - calculate mean and sd values for each plate, empty vs not empty
+con_mean_sd_empty <- ddply(confluency_data, ~ Plate * time_elapsed * empty, summarize,
+                              mean = mean(phenotype_value), sd = sd(phenotype_value))
+
+#confluency - plot mean and sd values for each plate, neg.control vs others - using geom_ribbon()
+ggplot(con_mean_sd_empty, 
+       aes(x=as.numeric(time_elapsed), y=as.numeric(mean), colour = as.factor(Plate), group = Plate)) +
+  geom_ribbon(aes(ymin=mean-sd, ymax=mean+sd), alpha=0.2) + 
+  facet_grid(~ empty, scales = "fixed") +
+  xlab("Time Elapsed") +
+  ylab("Confluency Mean & SD") +
+  scale_colour_discrete(name="Plate") +
+  ggtitle("Confluency\nPlate Mean & SD (line size)\nNegative Control T/F (facets)") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white")) 
+```
+

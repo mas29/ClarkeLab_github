@@ -1,0 +1,132 @@
+---
+title: "Pathway Analysis"
+author: "Maia Smith"
+date: "March 24, 2015"
+output: html_document
+---
+
+Pathway analysis !!!!! SOMETHING WRONG WITH PLOTLY
+================
+
+Note: To get the hover information working correctly on Plotly graphs (the interactive graphs), do the following: 
+1. Hover anywhere over graph
+2. You'll see icons appear at the top right-hand corner of the graph
+3. Select the icon for "Show closest data on hover"
+
+Sparklines by Pathway
+------------------------
+
+Compared to negative controls:
+
+```{r, echo=FALSE, fig.width=15, fig.height=15}
+
+# SG
+ggplot(sytoxG_data) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank(),
+        legend.direction="vertical")
+
+# Confluency
+ggplot(confluency_data) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                             fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank(),
+        legend.direction="vertical")
+```
+
+Sparklines By Pathway, in Plotly:
+-------
+
+```{r, eval=FALSE, echo=FALSE} 
+plot <- ggplot(sytoxG_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+                   text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE} 
+plot <- ggplot(confluency_data, 
+               aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
+                   text=Compound)) +
+  geom_line() +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency - Facets: Pathway") +
+  facet_wrap(~Pathway, ncol=6, scales = "fixed") +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        strip.text.x = element_text(size=4),
+        axis.text = element_blank())
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_sparklines_by_pathway", fileopt="overwrite"))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+Delta (max-min) values by Pathway
+----------------------------------
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  ggtitle("Sytox Green Delta (max-min) by Pathway") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
+
+```{r, eval=FALSE, echo=FALSE}
+plot <- ggplot(confluency_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+  geom_point(alpha=0.4) +
+  ylab("Delta (max-min)") +
+  ggtitle("Confluency Delta (max-min) by Pathway") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        axis.text.x = element_text(size=6, angle=75))
+response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
+url <- response$response$url
+plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+```
+`r I(plotly_iframe)`
