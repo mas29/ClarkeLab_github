@@ -5,7 +5,7 @@ date: "March 24, 2015"
 output: html_document
 ---
 
-Pathway analysis !!!!! SOMETHING WRONG WITH PLOTLY
+Pathway analysis 
 ================
 
 Note: To get the hover information working correctly on Plotly graphs (the interactive graphs), do the following: 
@@ -60,8 +60,8 @@ ggplot(confluency_data) +
 Sparklines By Pathway, in Plotly:
 -------
 
-```{r, eval=FALSE, echo=FALSE} 
-plot <- ggplot(sytoxG_data, 
+```{r, echo=FALSE, plotly=TRUE} 
+SG_sparklines_by_pathway <- ggplot(sytoxG_data, 
                aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
                    text=Compound)) +
   geom_line() +
@@ -74,14 +74,11 @@ plot <- ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4),
         axis.text = element_blank())
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_sparklines_by_pathway", fileopt="overwrite"))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(SG_sparklines_by_pathway, session="knitr", kwargs=list(world_readable=FALSE, filename="SG_sparklines_by_pathway", fileopt="overwrite"))
 ```
-`r I(plotly_iframe)`
 
-```{r, eval=FALSE, echo=FALSE} 
-plot <- ggplot(confluency_data, 
+```{r, echo=FALSE, plotly=TRUE} 
+Con_sparklines_by_pathway <- ggplot(confluency_data, 
                aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound,
                    text=Compound)) +
   geom_line() +
@@ -94,39 +91,59 @@ plot <- ggplot(confluency_data,
         panel.background = element_rect(fill = "white"),
         strip.text.x = element_text(size=4),
         axis.text = element_blank())
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_sparklines_by_pathway", fileopt="overwrite"))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(Con_sparklines_by_pathway, session="knitr", kwargs=list(world_readable=FALSE, filename="Con_sparklines_by_pathway", fileopt="overwrite"))
 ```
-`r I(plotly_iframe)`
 
 Delta (max-min) values by Pathway
 ----------------------------------
 
-```{r, eval=FALSE, echo=FALSE}
-plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+```{r, echo=FALSE, plotly=TRUE}
+SG_delta_by_pathway <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
   geom_point(alpha=0.4) +
   ylab("Delta (max-min)") +
   ggtitle("Sytox Green Delta (max-min) by Pathway") +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "white"),
         axis.text.x = element_text(size=6, angle=75))
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(SG_delta_by_pathway, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite"), session="knitr")
 ```
-`r I(plotly_iframe)`
 
-```{r, eval=FALSE, echo=FALSE}
-plot <- ggplot(confluency_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
+```{r, echo=FALSE, plotly=TRUE}
+Con_delta_by_pathway <- ggplot(confluency_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
   geom_point(alpha=0.4) +
   ylab("Delta (max-min)") +
   ggtitle("Confluency Delta (max-min) by Pathway") +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill = "white"),
         axis.text.x = element_text(size=6, angle=75))
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(Con_delta_by_pathway, kwargs=list(world_readable=FALSE, filename="Con_delta_by_pathway", fileopt="overwrite"), session="knitr")
 ```
-`r I(plotly_iframe)`
+
+Which pathways are significantly different from the negative controls (measured by AUC)? 
+------------------
+
+For Sytox Green:
+
+```{r, echo=FALSE}
+# --> SG
+fit_SG <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "SG")
+summary <-  as.data.frame(summary(fit_SG)$coef)
+sig_level <- 0.01
+sig_pathways_SG <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_SG <- gsub("Pathway","",sig_pathways_SG)
+print(paste("The following pathways have an AUC for Sytox Green significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_SG[2:length(sig_pathways_SG)])
+```
+
+For Confluency:
+
+```{r, echo=FALSE} 
+# --> Con
+fit_Con <- lm(AUC_trapezoidal_integration ~ Pathway, data_for_stats, subset = phenotypic_Marker == "Con")
+summary <-  as.data.frame(summary(fit_Con)$coef)
+sig_level <- 0.01
+sig_pathways_Con <- rownames(summary[summary[,"Pr(>|t|)"] < sig_level,])
+sig_pathways_Con <- gsub("Pathway","",sig_pathways_Con)
+print(paste("The following pathways have an AUC for Confluency significantly different (p < ",sig_level,") from the negative controls' AUC?",sep=""))
+print(sig_pathways_Con[2:length(sig_pathways_Con)])
+```

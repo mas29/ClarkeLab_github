@@ -1,0 +1,133 @@
+---
+title: "Cluster Analysis"
+author: "Maia Smith"
+date: "March 24, 2015"
+output: html_document
+---
+
+Cluster Analysis
+============
+
+Clustering is by Euclidean distance, with the features for each compound being their values at each time point.
+
+Sytox Green
+----------
+
+```{r, echo=FALSE, fig.width=10, fig.height=10}
+
+# Function to get the clustering of your data
+# param prelim_df -- the df as a result of the preliminary_processing() function in the GetData script
+# param df -- the df in "tall" format, for only your phenotypic marker of interest
+# param phenotypic_Marker_name -- name of your phenotypic marker, as is shown in the input dataset (e.g. "SG", "Con")
+# param num_clusters -- how many clusters you want
+get_data_w_clusters <- function(prelim_df, df, phenotypic_Marker_name, num_clusters) {
+  # Parameters
+  start_index <- which(colnames(prelim_df) == "0")
+  end_index <- which(colnames(prelim_df) == "46")
+  num_time_intervals <- length(unique(df$time_elapsed)) # Number of time intervals
+  
+  # Get Sytox Green raw time series data only, for all compounds (including negative controls)
+  data_for_heatmap <- prelim_df[prelim_df$phenotypic_Marker == phenotypic_Marker_name, start_index:end_index]
+  rownames(data_for_heatmap) <- prelim_df[prelim_df$phenotypic_Marker == phenotypic_Marker_name,]$Compound
+  data_matrix <- as.matrix(data_for_heatmap)
+  
+  # Get distances (Euclidean) and clusters
+  distMatrix <- dist(data_matrix, method="euclidean")
+  hr <- hclust(distMatrix, method="average")
+  
+  # Cut the tree and create color vector for clusters.
+  mycl <- cutree(hr, k = num_clusters) # Clusters assigned to each compound.
+  mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9)
+  mycolhc <- mycolhc[as.vector(mycl)] 
+  
+  # Plot all clusters
+  compound_clusters <- as.data.frame(mycl)
+  colnames(compound_clusters) <- "cluster"
+  compound_clusters$cluster <- as.factor(compound_clusters$cluster)
+  df_w_clusters <- merge(df, compound_clusters, by.x="Compound", by.y="row.names")
+}
+
+# --> SG
+
+# Cluster data
+sytoxG_data_w_clusters <- get_data_w_clusters(confluency_sytoxG_data_prelim_proc, sytoxG_data, "SG", 12)
+# Confidence interval bounds
+confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Plot data
+ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+# --> Con
+
+# Cluster data
+con_data_w_clusters <- get_data_w_clusters(confluency_sytoxG_data_prelim_proc, confluency_data, "Con", 12)
+# Confidence interval bounds
+confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+
+# Plot data
+ggplot(con_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                            fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+```
+
+In Plotly:
+--------
+
+```{r, echo = FALSE, plotly=TRUE}
+# --> SG
+SG_cluster_analysis <- ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+py$ggplotly(SG_cluster_analysis, session="knitr", kwargs=list(world_readable=FALSE, filename="SG_cluster_analysis", fileopt="overwrite"))
+```
+
+```{r, echo = FALSE, plotly=TRUE}
+# --> Con
+Con_cluster_analysis <- ggplot(con_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+py$ggplotly(Con_cluster_analysis, session="knitr", kwargs=list(world_readable=FALSE, filename="Con_cluster_analysis", fileopt="overwrite"))
+```
+
