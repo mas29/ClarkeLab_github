@@ -21,8 +21,8 @@ Note: To get the hover information working correctly on Plotly graphs (the inter
 
 Compare controls and treatments
 -----------------------------------------------
-```{r, eval=FALSE, echo=FALSE}
-plot <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+```{r, echo=FALSE, plotly=TRUE}
+SG_control_vs_treatment <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Sytox Green") +
@@ -32,15 +32,12 @@ plot <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenoty
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
-    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(SG_control_vs_treatment, session="knitr", kwargs=list(world_readable=FALSE, filename="SG_control_vs_treatment", fileopt="overwrite"))
 ```
-`r I(plotly_iframe)`
 
-```{r, eval=FALSE, echo=FALSE}
-plot <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
+
+```{r, echo=FALSE, plotly=TRUE}
+Con_control_vs_treatment <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +
   ylab("Confluency") +
@@ -50,12 +47,9 @@ plot <- ggplot(confluency_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phe
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"), 
         axis.text = element_blank())
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="Con_control_vs_treatment", fileopt="overwrite"))
-url <- response$response$url
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, 
-    "/800/1200' width='800' height='800'></iframe><center>", sep = "")
+py$ggplotly(Con_control_vs_treatment, session="knitr", kwargs=list(world_readable=FALSE, filename="Con_control_vs_treatment", fileopt="overwrite"))
 ```
-`r I(plotly_iframe)`
+
 
 Compare plates for controls and treatments
 -----------------------------------------------

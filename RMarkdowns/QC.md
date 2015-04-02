@@ -20,10 +20,22 @@ Note: To get the hover information working correctly on Plotly graphs (the inter
 Compare controls and treatments
 -----------------------------------------------
 
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/225/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
+```
+## Estimated Draw Time SlowThe draw time for this plot will be slow for clients without much RAM.
+```
+
+<iframe height="600" id="igraph" scrolling="no" seamless="seamless"
+				src="https://plot.ly/~mas29/225" width="600" frameBorder="0"></iframe>
 
 
-<center><iframe scrolling='no' seamless='seamless' style='border:none' src='https://plot.ly/~mas29/225/sytox-green-over-time-control-vs-treatment.embed?width=550&height=550/800/1200' width='800' height='800'></iframe><center>
+
+```
+## Estimated Draw Time SlowThe draw time for this plot will be slow for clients without much RAM.
+```
+
+<iframe height="600" id="igraph" scrolling="no" seamless="seamless"
+				src="https://plot.ly/~mas29/223" width="600" frameBorder="0"></iframe>
+
 
 Compare plates for controls and treatments
 -----------------------------------------------
