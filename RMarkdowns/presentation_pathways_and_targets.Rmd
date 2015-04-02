@@ -34,6 +34,7 @@ dir = "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 #dir = "/Users/mas29/Documents/ClarkeLab_github/"
 
 # Get data
+source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/Configure.R")
 source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
 
 data_for_stats <- confluency_sytoxG_data
@@ -69,27 +70,6 @@ plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style
 ```
 `r I(plotly_iframe)`
 
-Delta (max-min) values by Pathway
-----------------------------------
-
-```{r, eval=FALSE, echo=FALSE}
-plot <- ggplot(sytoxG_data_features, aes(Pathway, delta_min_max, text=Compound)) + 
-  geom_point(alpha=0.4) +
-  ylab("Delta (max-min)") +
-  ggtitle("Sytox Green Delta (max-min) by Pathway") +
-  theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill = "white"),
-        axis.text.x = element_text(size=6, angle=75))
-response <- py$ggplotly(plot, kwargs=list(world_readable=FALSE, filename="SG_delta_by_pathway", fileopt="overwrite", layout=list(hovermode="closest")))
-url <- response$response$url
-```
-
-```{r, echo=FALSE}
-url<-"https://plot.ly/~mas29/233.embed?width=550&height=550" 
-plotly_iframe <- paste("<center><iframe scrolling='no' seamless='seamless' style='border:none' src='", url, "/800/1200' width='800' height='800'></iframe><center>", sep = "")
-```
-`r I(plotly_iframe)`
-
 Target analysis
 =======
 
@@ -107,7 +87,7 @@ print(paste("The following targets have an AUC for Sytox Green significantly dif
 print(sig_targets_SG[2:length(sig_targets_SG)])
 ```
 
-```{r,echo=FALSE}
+```{r,echo=FALSE, fig.height=10, fig.width=10}
 sytoxG_data_significant_targets_only <- sytoxG_data[which(sytoxG_data$Targets..as.supplied. %in% sig_targets_SG) , ]
 ggplot(sytoxG_data_significant_targets_only) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
@@ -123,7 +103,6 @@ ggplot(sytoxG_data_significant_targets_only) +
   theme(panel.grid = element_blank(),
         axis.ticks.length = unit(0, "cm"),
         panel.background = element_rect(fill = "white"),
-        strip.text.x = element_text(size=4),
         axis.text = element_blank(),
         legend.key.size = unit(0.4, "cm"),
         legend.direction="vertical")
