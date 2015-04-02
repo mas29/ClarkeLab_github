@@ -3,7 +3,10 @@
 
 # -------------------------------------------------
 
-setwd("Scripts")
+#!!!!!! SET WORKING DIRECTORY....... :-(
+#!!!!! ERROR IN PLOTLY..... :-(
+
+setwd("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts")
 
 # Run configure file 
 source("Configure.R")
@@ -41,6 +44,22 @@ browseURL("AllSparklines.html")
 # Pathway Analysis
 knitr::knit2html("PathwayAnalysis.Rmd")
 browseURL("PathwayAnalysis.html")
+
+# Target Analysis
+knitr::knit2html("TargetAnalysis.Rmd")
+browseURL("TargetAnalysis.html")
+
+# Early-Acting vs Late-Acting Analysis
+knitr::knit2html("EarlyActingVsLateActingCurves.Rmd")
+browseURL("EarlyActingVsLateActingCurves.html")
+
+# Cluster Analysis
+knitr::knit2html("ClusterAnalysis.Rmd")
+browseURL("ClusterAnalysis.html")
+
+# QQ Plots and Density Plots of Negative Controls vs Treatments
+knitr::knit2html("QQPlotsAndDensityPlots.Rmd")
+browseURL("QQPlotsAndDensityPlots.html")
 
 # Explore individual compounds
 setwd("../Scripts")

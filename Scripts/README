@@ -4,8 +4,9 @@ To analyze your IncuCyte data:
 2. Go to https://plot.ly/ and sign in with
       Username: mas29
       Password: incucyte
-3. Run the Analyze.R script in the Scripts folder.
-4. You're done! The analyses are in your browser. Hope they help! 
+3. Go to the Analyze.R script and change the first line to point to the Scripts directory in your computer
+4. Run the Analyze.R script in the Scripts folder.
+5. You're done! The analyses are in your browser. Hope they help! 
 
 If you need to contact me, my email is mas29@sfu.ca.
 
