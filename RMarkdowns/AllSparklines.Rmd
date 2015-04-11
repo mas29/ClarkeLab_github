@@ -15,10 +15,10 @@ All Sparklines
 ```{r, echo=FALSE, fig.width=26, fig.height=26} 
 # No negative controls included.
 # SG
-ggplot(sytoxG_data_no_NC, 
+ggplot(data_tall_no_NC_each_marker[[1]], 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound)) +
-  geom_rect(data = sytoxG_data_no_NC, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_rect(data = data_tall_no_NC_each_marker[[1]], aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
   geom_line() +
   scale_fill_gradient2(low = "red", mid = "white", high = "red",
                        midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
@@ -40,10 +40,10 @@ ggplot(sytoxG_data_no_NC,
         legend.text = element_text(size = 20.5, angle = 00))
 
 # Confluency
-ggplot(confluency_data_no_NC, 
+ggplot(data_tall_no_NC_each_marker[[2]], 
        aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), 
            group=Compound)) +
-  geom_rect(data = confluency_data_no_NC, aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
+  geom_rect(data = data_tall_no_NC_each_marker[[2]], aes(xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, fill = delta_min_max), alpha = 0.4) +
   geom_line() +
   scale_fill_gradient2(low = "red", mid = "white", high = "red",
                        midpoint = 0, space = "rgb", na.value = "grey50", guide = "colourbar") + 
