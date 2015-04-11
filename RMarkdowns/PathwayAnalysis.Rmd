@@ -19,11 +19,13 @@ Sparklines by Pathway
 Compared to negative controls:
 
 ```{r, echo=FALSE, fig.width=15, fig.height=15}
+sytoxG_data <- data_tall_each_marker[[1]]
+confluency_data <- data_tall_each_marker[[2]]
 
 # SG
 ggplot(sytoxG_data) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
-  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+  geom_ribbon(data = confidence_intervals_each_marker[[1]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                             fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
@@ -41,7 +43,7 @@ ggplot(sytoxG_data) +
 # Confluency
 ggplot(confluency_data) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
-  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+  geom_ribbon(data = confidence_intervals_each_marker[[2]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                              fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),

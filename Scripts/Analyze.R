@@ -3,16 +3,14 @@
 
 # -------------------------------------------------
 
-#!!!!!! SET WORKING DIRECTORY....... :-(
-#!!!!! ERROR IN PLOTLY..... :-(
-
-setwd("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts")
+#!!!!!! SET WORKING DIRECTORY....... :-( (top level folder for this application)
+dir <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 
 # Run configure file 
-source("Configure.R")
+source(paste(dir,"Scripts/Configure.R",sep=""))
 
 # Get the data
-source("GetData.R")
+source(paste(dir,"Scripts/GetData.R",sep=""))
 
 # -------------------------------------------------
 
@@ -29,6 +27,7 @@ library(reshape2)
 library(gplots)
 library(RColorBrewer)
 library(shiny)
+
 
 # Get the analyses and open them in a browser
 setwd("../RMarkdowns")
@@ -63,5 +62,5 @@ browseURL("QQPlotsAndDensityPlots.html")
 
 # Explore individual compounds
 setwd("../Scripts")
-runApp("shiny_scripts/temp_sparklines", launch.browser = TRUE)
+runApp("shiny_scripts/explore_compound", launch.browser = TRUE)
 

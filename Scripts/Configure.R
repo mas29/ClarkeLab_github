@@ -1,4 +1,5 @@
 # Parameters for 1833Reconfigure2_ms_edits.R script, GetData.R script 
+library(plotly)
 
 # Filename and path for key 
 # ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx"
@@ -27,6 +28,10 @@ last_timepoint <- "46"
 # Interval (in hours) between time points
 # ex. "2"
 time_interval <- "2"
+
+# Phenotypic marker names as comprehensible by user (order must agree between phenotypic_marker_names and phenotypic_markers)
+# ex. c("Sytox Green", "Confluency")
+phenotypic_marker_names <- c("Sytox Green", "Confluency")
 
 # Phenotypic marker names as they appear in the data_filename file
 # ex. c("SG", "Con")

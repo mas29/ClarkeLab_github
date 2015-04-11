@@ -50,14 +50,12 @@ get_data_w_clusters <- function(prelim_df, df, phenotypic_Marker_name, num_clust
 # --> SG
 
 # Cluster data
-sytoxG_data_w_clusters <- get_data_w_clusters(confluency_sytoxG_data_prelim_proc, sytoxG_data, "SG", 12)
-# Confidence interval bounds
-confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+sytoxG_data_w_clusters <- get_data_w_clusters(data_wide, data_tall_each_marker[[1]], "SG", 12)
 
 # Plot data
 ggplot(sytoxG_data_w_clusters) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
-  geom_ribbon(data = confidence_intervals_SG, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+  geom_ribbon(data = confidence_intervals_each_marker[[1]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                             fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),
@@ -74,14 +72,12 @@ ggplot(sytoxG_data_w_clusters) +
 # --> Con
 
 # Cluster data
-con_data_w_clusters <- get_data_w_clusters(confluency_sytoxG_data_prelim_proc, confluency_data, "Con", 12)
-# Confidence interval bounds
-confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+con_data_w_clusters <- get_data_w_clusters(data_wide, data_tall_each_marker[[2]], "Con", 12)
 
 # Plot data
 ggplot(con_data_w_clusters) +
   geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
-  geom_ribbon(data = confidence_intervals_Con, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+  geom_ribbon(data = confidence_intervals_each_marker[[2]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
                                                             fill = "red", colour = NULL), alpha = 0.6) +
   scale_fill_manual(name = "Legend",
                     values = c('red'),

@@ -17,6 +17,7 @@ library(reshape2)
 #function to get the data formatted correctly, replace individual na_values, remove entirely NA rows, and other preliminary processing
 preliminary_processing <- function(df) {
   
+  #!!!!!!!!!!!!!!!!!!!! MUST CHANGE FROM confluency_data etc. 
   confluency_data <- df[,c(1:which(colnames(df) == last_timepoint)[1])]
   sytoxG_data <- df[,c(1:which(colnames(df) == "Screen"),which(colnames(df) == "phenotypic_Marker")[2]:ncol(df))]
   df <- rbind(confluency_data,sytoxG_data)
@@ -28,6 +29,10 @@ preliminary_processing <- function(df) {
   df$Pathway[which(df$Compound == "Empty")] <- "NegControl"
   df$Pathway <- as.factor(df$Pathway)
   df$Pathway <- relevel(df$Pathway, ref = "NegControl")
+  
+  # Turn to NA's
+  df$Target.class..11Mar15.[which(is.na(df$Target.class..11Mar15.))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
+  df$Targets..as.supplied.[which(is.na(df$Targets..as.supplied.))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
   
   # Rename "empty" wells by appending their plate and position
   df$Compound <- as.character(df$Compound) #required for changing Empty compound names to include plate & position
@@ -189,49 +194,66 @@ get_features <- function(df) {
 
 
 
-# load the data from Giovanni (C2C12_tunicamycin_output.csv), which is all the data from 1833 compounds, 
-# created by the _____ script
-#!!!!!!!!!!!!!!!!!!!! replace filename of data frame with the correct filename !!!!!!!!!!!!!!!!!!!
+# load the data
 data_from_reconfigure <- read.csv(file=data_filename, header=T, check.names=F, row.names=1)
 
-# preliminary processing on data
-confluency_sytoxG_data_prelim_proc <- preliminary_processing(data_from_reconfigure)
+# preliminary processing on data (data is in wide format, hence the variable name)
+data_wide <- preliminary_processing(data_from_reconfigure)
 
 # add initial metrics
-confluency_sytoxG_data <- add_initial_metrics(confluency_sytoxG_data_prelim_proc, 
-                                              which(colnames(confluency_sytoxG_data_prelim_proc)==first_timepoint), 
-                                              which(colnames(confluency_sytoxG_data_prelim_proc)==last_timepoint), 
+data_tall <- add_initial_metrics(data_wide, 
+                                              which(colnames(data_wide)==first_timepoint), 
+                                              which(colnames(data_wide)==last_timepoint), 
                                               seq(as.numeric(first_timepoint),as.numeric(last_timepoint),as.numeric(time_interval)))
 
-# add drugbank data??
-
 # reshape to tall data frame
-confluency_sytoxG_data <- melt(confluency_sytoxG_data, measure.vars=(colnames(confluency_sytoxG_data)[which(colnames(confluency_sytoxG_data)==first_timepoint):which(colnames(confluency_sytoxG_data)==last_timepoint)]))
-colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "variable"] <- "time_elapsed"
-colnames(confluency_sytoxG_data)[colnames(confluency_sytoxG_data) == "value"] <- "phenotype_value"
-confluency_sytoxG_data$time_elapsed <- as.numeric(as.character(confluency_sytoxG_data$time_elapsed)) #convert factor to number for time_elapsed column
+data_tall <- melt(data_tall, measure.vars=(colnames(data_tall)[which(colnames(data_tall)==first_timepoint):which(colnames(data_tall)==last_timepoint)]))
+colnames(data_tall)[colnames(data_tall) == "variable"] <- "time_elapsed"
+colnames(data_tall)[colnames(data_tall) == "value"] <- "phenotype_value"
+data_tall$time_elapsed <- as.numeric(as.character(data_tall$time_elapsed)) #convert factor to number for time_elapsed column
 
 # add metrics to compare each sparkline to the negative controls
-confluency_sytoxG_data <- add_metrics_compare_to_NC(confluency_sytoxG_data_prelim_proc, confluency_sytoxG_data, phenotypic_markers, first_timepoint, last_timepoint)
+data_tall <- add_metrics_compare_to_NC(data_wide, data_tall, phenotypic_markers, first_timepoint, last_timepoint)
 
 # find first time points at which the curve overtakes the upperbound and lowerbound on the confidence intervals for negative controls
-confluency_sytoxG_data <- get_timepoints_of_phenotype_value_overtaking_NC(confluency_sytoxG_data)
+data_tall <- get_timepoints_of_phenotype_value_overtaking_NC(data_tall)
 
 # get separated data for each phenotypic marker
-sytoxG_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "SG")
-confluency_data <- subset(confluency_sytoxG_data, phenotypic_Marker == "Con")
-
-# get features
-sytoxG_data_features <- get_features(sytoxG_data)
-confluency_data_features <- get_features(confluency_data)
+data_tall_each_marker <- list()
+for (i in 1:length(phenotypic_markers)) {
+  data_tall_new_marker <- subset(data_tall, phenotypic_Marker == phenotypic_markers[i])
+  data_tall_each_marker[[i]] <- data_tall_new_marker
+}
+data_tall_each_marker <- as.list(setNames(data_tall_each_marker, phenotypic_marker_names))
 
 # Get number of time intervals
-num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
+num_time_intervals <- length(unique(data_tall$time_elapsed))
 
-# Get confidence interval bounds
-confidence_intervals_SG <- sytoxG_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
-confidence_intervals_Con <- confluency_data[1:num_time_intervals,c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+# Get confidence interval bounds for each phenotypic marker
+confidence_intervals_each_marker <- list()
+for (i in 1:length(phenotypic_markers)) {
+  confidence_intervals_new_marker <- data_tall_each_marker[[i]][1:num_time_intervals,
+                                                                c("time_elapsed", "phenotype_value.NC.upper", "phenotype_value.NC.mean", "phenotype_value.NC.lower")]
+  confidence_intervals_each_marker[[i]] <- confidence_intervals_new_marker
+}
+confidence_intervals_each_marker <- as.list(setNames(confidence_intervals_each_marker, phenotypic_marker_names))
 
-# Get rid of negative control data
-sytoxG_data_no_NC <- sytoxG_data[which(sytoxG_data$empty == "Treatment"),]
-confluency_data_no_NC <- confluency_data[which(confluency_data$empty == "Treatment"),]
+# Get rid of negative control data for each phenotypic marker
+data_tall_no_NC_each_marker <- list()
+for (i in 1:length(phenotypic_markers)) {
+  data_tall_no_NC_new_marker <- data_tall_each_marker[[i]][which(data_tall_each_marker[[i]]$empty == "Treatment"),]
+  data_tall_no_NC_each_marker[[i]] <- data_tall_no_NC_new_marker
+}
+data_tall_no_NC_each_marker <- as.list(setNames(data_tall_no_NC_each_marker, phenotypic_marker_names))
+
+# Get features-only dataframes for each phenotypic marker
+data_tall_features_each_marker <- list()
+for (i in 1:length(phenotypic_markers)) {
+  data_tall_features_new_marker <- get_features(data_tall_each_marker[[i]])
+  data_tall_features_each_marker[[i]] <- data_tall_features_new_marker
+}
+data_tall_features_each_marker <- as.list(setNames(data_tall_features_each_marker, phenotypic_marker_names))
+
+# Set phenotypic marker name correlations (ex. "Sytox Green" --> "SG")
+phenotypic_markers <- setNames(phenotypic_markers, phenotypic_marker_names)
+
