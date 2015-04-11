@@ -102,13 +102,13 @@ get_qq_hist_comparison <- function(df, metric_var_names, metric_titles, main_tit
 }
 
 # SG
-get_qq_hist_comparison(sytoxG_data_features, c("delta_min_max", "time_to_max", "time_x_distance.upper", "time_to_most_positive_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+get_qq_hist_comparison(data_tall_features_each_marker[[1]], c("delta_min_max", "time_to_max", "time_x_distance.upper", "time_to_most_positive_slope", "mean", "min", "AUC_trapezoidal_integration"), 
           c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Positive Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Sytox Green Metrics - Q-Q Plot & Histogram")
 ```
 
 ```{r, echo=FALSE, fig.width=10, fig.height=13}
 # Confluency
-get_qq_hist_comparison(confluency_data_features, c("delta_min_max", "time_to_max", "time_x_distance.lower", "time_to_most_negative_slope", "mean", "min", "AUC_trapezoidal_integration"), 
+get_qq_hist_comparison(data_tall_features_each_marker[[2]], c("delta_min_max", "time_to_max", "time_x_distance.lower", "time_to_most_negative_slope", "mean", "min", "AUC_trapezoidal_integration"), 
           c("Delta (max-min)", "Time To Max", "Time*Distance", "Time To Most Negative Slope", "Mean", "Min", "AUC (trapezoidal integration)"), "Confluency Metrics - Q-Q Plot & Histogram")
 
 ```

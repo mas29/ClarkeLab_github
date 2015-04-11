@@ -22,6 +22,9 @@ Note: To get the hover information working correctly on Plotly graphs (the inter
 Compare controls and treatments
 -----------------------------------------------
 ```{r, echo=FALSE, plotly=TRUE}
+sytoxG_data <- data_tall_each_marker[[1]]
+confluency_data <- data_tall_each_marker[[2]]
+
 SG_control_vs_treatment <- ggplot(sytoxG_data, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), text=Compound, group=Compound)) +
   geom_line() +
   xlab("Time Elapsed") +

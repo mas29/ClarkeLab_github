@@ -987,3 +987,304 @@ ggplot(sytoxG_data,
         panel.background = element_rect(fill = "white"),
         panel.margin = unit(.085, "cm"))
 ```
+
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+  
+  # Get index of phenotypic marker of interest
+  marker_index <- which(phenotypic_marker_names == input$marker)
+  
+  # Expression that generates a sparkline for the selected compound. 
+  
+  output$sparklines <- renderPlot({
+    
+    data_tall.compound_and_marker <- subset(data_tall_no_NC_each_marker[[marker_index]], Compound == input$compound)
+    
+    #     sytoxG_data_no_NC.sub <- sytoxG_data_no_NC[sytoxG_data_no_NC$Compound == input$compound,] 
+    #     confluency_data_no_NC.sub <- confluency_data_no_NC[confluency_data_no_NC$Compound == input$compound,] 
+    
+    plot(data_tall.compound_and_marker, confidence_intervals_each_marker[[marker_index]], input$marker, y_limits_SG, input$compound)
+    
+  })
+})
+
+
+
+
+
+#################
+serverInfo
+
+
+source("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/GetData.R")
+
+sytoxG_data <- data_tall_each_marker[[1]]
+confluency_data <- data_tall_each_marker[[2]]
+sytoxG_data_no_NC <- data_tall_no_NC_each_marker[[1]]
+confluency_data_no_NC <- data_tall_no_NC_each_marker[[2]]
+
+# Number of time intervals
+num_time_intervals <- length(unique(sytoxG_data$time_elapsed))
+
+# Get axis limits
+y_limits_SG <- c(min(sytoxG_data$phenotype_value), max(sytoxG_data$phenotype_value))
+y_limits_Con <- c(min(confluency_data$phenotype_value), max(confluency_data$phenotype_value))
+
+# Function to plot 
+plot <- function(df, confidence_intervals, phenotypic_marker_name, y_axis_limits, compound) {
+  ggplot() +
+    geom_line(data = df, aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound)) +
+    geom_ribbon(data = confidence_intervals, mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper, fill = "red", colour = NULL), alpha = 0.2) +
+    scale_fill_manual(name = "Legend", values = 'red', labels = paste(phenotypic_marker_name,'\nNegative Control\n99.9% C.I.',sep="")) +
+    xlab("Time Elapsed (hours)") +
+    ylab(phenotypic_marker_name) +
+    ggtitle(paste(phenotypic_marker_name," Levels for ",compound," Over Time",sep="")) +
+    scale_y_continuous(limits = c(y_axis_limits[1], y_axis_limits[2])) +
+    theme(panel.grid = element_blank(),
+          strip.text=element_blank(),
+          legend.key.height = unit(.85, "cm"),
+          panel.background = element_rect(fill = "white"),
+          panel.margin = unit(.085, "cm"))
+}
+
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+  
+  # Get index of phenotypic marker of interest
+  marker_index <- which(phenotypic_marker_names == input$marker)
+  
+  # Expression that generates a sparkline for the selected compound. 
+  
+  output$sparklines <- renderPlot({
+    
+    data_tall.compound_and_marker <- subset(data_tall_no_NC_each_marker[[marker_index]], Compound == input$compound)
+    
+    #     sytoxG_data_no_NC.sub <- sytoxG_data_no_NC[sytoxG_data_no_NC$Compound == input$compound,] 
+    #     confluency_data_no_NC.sub <- confluency_data_no_NC[confluency_data_no_NC$Compound == input$compound,] 
+    
+    plot(data_tall.compound_and_marker, confidence_intervals_each_marker[[marker_index]], input$marker, y_limits_SG, input$compound)
+    
+  })
+})
+
+
+
+# Get y-axis limits
+y_limits <- c(min(data_tall_each_marker[[input$marker]]$phenotype_value), max(data_tall_each_marker[[input$marker]]$phenotype_value))
+
+
+
+
+# CLUSTERING THAT WORKS
+
+
+---
+  title: "Cluster Analysis"
+author: "Maia Smith"
+date: "March 24, 2015"
+output: html_document
+---
+  
+  Cluster Analysis
+============
+  
+  Clustering is by Euclidean distance, with the features for each compound being their values at each time point.
+
+Sytox Green
+----------
+  
+  ```{r, echo=FALSE, fig.width=10, fig.height=10}
+
+sytoxG_data <- data_tall_each_marker[[1]]
+confluency_data <- data_tall_each_marker[[2]]
+
+# Function to get the clustering of your data
+# param prelim_df -- the df as a result of the preliminary_processing() function in the GetData script
+# param df -- the df in "tall" format, for only your phenotypic marker of interest
+# param phenotypic_Marker_name -- name of your phenotypic marker, as is shown in the input dataset (e.g. "SG", "Con")
+# param num_clusters -- how many clusters you want
+get_data_w_clusters <- function(prelim_df, df, phenotypic_Marker_name, num_clusters) {
+  # Parameters
+  start_index <- which(colnames(prelim_df) == "0")
+  end_index <- which(colnames(prelim_df) == "46")
+  num_time_intervals <- length(unique(df$time_elapsed)) # Number of time intervals
+  
+  # Get Sytox Green raw time series data only, for all compounds (including negative controls)
+  data_for_heatmap <- prelim_df[prelim_df$phenotypic_Marker == phenotypic_Marker_name, start_index:end_index]
+  rownames(data_for_heatmap) <- prelim_df[prelim_df$phenotypic_Marker == phenotypic_Marker_name,]$Compound
+  data_matrix <- as.matrix(data_for_heatmap)
+  
+  # Get distances (Euclidean) and clusters
+  distMatrix <- dist(data_matrix, method="euclidean")
+  hr <- hclust(distMatrix, method="average")
+  
+  # Cut the tree and create color vector for clusters.
+  mycl <- cutree(hr, k = num_clusters) # Clusters assigned to each compound.
+  mycolhc <- rainbow(length(unique(mycl)), start=0.1, end=0.9)
+  mycolhc <- mycolhc[as.vector(mycl)] 
+  
+  # Plot all clusters
+  compound_clusters <- as.data.frame(mycl)
+  colnames(compound_clusters) <- "cluster"
+  compound_clusters$cluster <- as.factor(compound_clusters$cluster)
+  df_w_clusters <- merge(df, compound_clusters, by.x="Compound", by.y="row.names")
+}
+
+# --> SG
+
+# Cluster data
+sytoxG_data_w_clusters <- get_data_w_clusters(data_wide, sytoxG_data, "SG", 12)
+
+# Plot data
+ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_each_marker[[1]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                                          fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+# --> Con
+
+# Cluster data
+con_data_w_clusters <- get_data_w_clusters(data_wide, confluency_data, "Con", 12)
+
+# Plot data
+ggplot(con_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  geom_ribbon(data = confidence_intervals_each_marker[[2]], mapping = aes(x = time_elapsed, ymin = phenotype_value.NC.lower, ymax = phenotype_value.NC.upper,
+                                                                          fill = "red", colour = NULL), alpha = 0.6) +
+  scale_fill_manual(name = "Legend",
+                    values = c('red'),
+                    labels = c('Negative Control\n99.9% C.I.')) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+```
+
+In Plotly:
+  --------
+  
+  ```{r, echo = FALSE, plotly=TRUE}
+# --> SG
+SG_cluster_analysis <- ggplot(sytoxG_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  xlab("Time Elapsed") +
+  ylab("Sytox Green") +
+  ggtitle("Sytox Green Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+py$ggplotly(SG_cluster_analysis, session="knitr", kwargs=list(world_readable=FALSE, filename="SG_cluster_analysis", fileopt="overwrite"))
+```
+
+```{r, echo = FALSE, plotly=TRUE}
+# --> Con
+Con_cluster_analysis <- ggplot(con_data_w_clusters) +
+  geom_line(aes(x=as.numeric(time_elapsed), y=as.numeric(phenotype_value), group=Compound, text=Compound)) +
+  xlab("Time Elapsed") +
+  ylab("Confluency") +
+  ggtitle("Confluency Sparklines for Each Cluster") +
+  facet_grid(empty~cluster) +
+  theme(panel.grid = element_blank(),
+        axis.ticks.length = unit(0, "cm"),
+        panel.background = element_rect(fill = "white"),
+        axis.text = element_blank())
+
+py$ggplotly(Con_cluster_analysis, session="knitr", kwargs=list(world_readable=FALSE, filename="Con_cluster_analysis", fileopt="overwrite"))
+```
+
+mainPanel(
+  tabsetPanel(
+    tabPanel("Sparkline", plotOutput("sparklines")), 
+    tabPanel("Target",  plotOutput("target")), 
+    tabPanel("Pathway", plotOutput("pathway")),
+    tabPanel("Cluster", plotOutput("cluster")),
+  )
+  #       h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
+  #                                           autoplay = NA, controls = "controls")),
+  plotOutput("sparklines"),
+  plotOutput("target"),
+  plotOutput("pathway"),
+  plotOutput("cluster")
+)
+
+# # Define UI 
+# shinyUI(fluidPage(
+#   
+#   # Application title
+#   titlePanel("Explore Selected Compound"),
+#   
+#   # Sidebar with a slider input for the number of bins
+#   sidebarLayout(
+#     sidebarPanel(
+#       selectizeInput(
+#         "compound", 'Select or Type Compound of Interest', choices = compound_list,
+#         multiple = FALSE
+#       ),
+#       radioButtons("marker", "Phenotypic Marker:", phenotypic_marker_names),
+#       sliderInput("clusters",
+#                   "Number of Clusters:",
+#                   min = 1,
+#                   max = 25,
+#                   value = 10)
+#     ),
+#     
+#     # Show a plot of the generated distribution
+#     mainPanel(
+#       #       h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
+#       #                                           autoplay = NA, controls = "controls")),
+#       plotOutput("sparklines"),
+#       plotOutput("target"),
+#       plotOutput("pathway"),
+#       plotOutput("cluster")
+#     )
+#   )
+# ))
+
+
+#     # Get cluster data for each phenotypic marker
+#     data_w_clusters_each_marker <- list()
+#     for (i in 1:length(phenotypic_markers)) {
+#       data_w_clusters_new_marker <- get_data_w_clusters(data_wide, data_tall_each_marker[[i]], phenotypic_markers[[i]], input$clusters)
+#       data_w_clusters_each_marker[[i]] <- data_w_clusters_new_marker
+#     }
+#     data_w_clusters_each_marker <- as.list(setNames(data_w_clusters_each_marker, phenotypic_marker_names))
+#     
+#     data_w_clusters_new_marker <- get_data_w_clusters(data_wide, data_tall_each_marker[[input$marker]], phenotypic_markers[[input$marker]], input$clusters)
+
+
+# Generates table of additional information for the compound
+output$compound_additional_info <- renderText({
+  
+  data_tall.compound <- subset(data_tall_no_NC_each_marker[[input$marker]], Compound == input$compound)
+  M.w. <- data_tall.compound$M.w.[1]
+  Target <- data_tall.compound$Target.class..11Mar15.[1]
+  Max.Solubility.in.DMSO <- data_tall.compound$Max.Solubility.in.DMSO[1]
+  
+  paste("\n\n\nMolecular Weight = ", M.w., 
+        "\nTarget = ", Target, 
+        "\nMax Solubility in DMSO = ", Max.Solubility.in.DMSO)
+  
+  
+  #     additional_info_for_compound <- data.frame(M.w. = M.w., Target = Target, Max.Solubility.in.DMSO = Max.Solubility.in.DMSO)
+  #     additional_info_for_compound
+})
