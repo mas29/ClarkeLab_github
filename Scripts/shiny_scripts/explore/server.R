@@ -3,8 +3,8 @@ library(ggplot2)
 library(grid)
 
 source(paste(dir, "Scripts/GetData.R", sep=""))
-
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_compound.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_target.R", sep=""))
 
 #####################################################################################
 ###### --------------------- Define server logic ----------------------------- ######
@@ -25,6 +25,17 @@ shinyServer(function(input, output) {
     
     # Plot data
     plot_sparkline(data_tall.compound_and_marker, confidence_intervals_each_marker[[input$marker]], input$marker, input$compound)
+  })
+  
+  # !!!!!!! Doesn't go to confluency
+  # Generates sparklines for the selected target and phenotypic marker. 
+  output$target.sparklines <- renderPlot({
+    
+    # Get data for specified target and marker
+    data_tall.target_and_marker <- subset(data_tall_no_NC_each_marker[[input$marker]], Target.class..11Mar15. == input$target)
+    
+    # Plot data
+    plot_target_sparklines(data_tall.target_and_marker, confidence_intervals_each_marker[[input$marker]], input$marker, input$target)
   })
   
   # Generates sparklines for target of the selected compound. 

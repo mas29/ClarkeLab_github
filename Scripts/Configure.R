@@ -1,6 +1,10 @@
 # Parameters for 1833Reconfigure2_ms_edits.R script, GetData.R script 
 library(plotly)
 
+########################################################################################################
+############# ------------------- Change the following configurations -------------------- #############
+########################################################################################################
+
 # Filename and path for key 
 # ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx"
 key_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx"
@@ -13,22 +17,6 @@ selleck_info_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_git
 # ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
 raw_data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
 
-# Filename and path for the output of the 1833Reconfigure2_ms_edits.R script
-# ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_tunicamycin_output_maia.csv"
-data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_tunicamycin_output_maia.csv"
-
-# First time point in data (in hours)
-# ex. "0"
-first_timepoint <- "0"
-
-# Last time point in data (in hours)
-# ex. "46"
-last_timepoint <- "46"
-
-# Interval (in hours) between time points
-# ex. "2"
-time_interval <- "2"
-
 # Phenotypic marker names as comprehensible by user (order must agree between phenotypic_marker_names and phenotypic_markers)
 # ex. c("Sytox Green", "Confluency")
 phenotypic_marker_names <- c("Sytox Green", "Confluency")
@@ -37,9 +25,17 @@ phenotypic_marker_names <- c("Sytox Green", "Confluency")
 # ex. c("SG", "Con")
 phenotypic_markers <- c("SG", "Con") 
 
+# The name of your IncuCyte screen
+# e.g. "C2C12 Diff Tunicamycin"
+screen_name <- "C2C12 Diff Tunicamycin"
+
 # Value for the NA wells (IncuCyte didn't detect a value for a particular phenotypic marker)
 # ex. 0.2320489
 na_value <- 0.2320489
+
+########################################################################################################
+############# ---------------- Do NOT change the following configurations ---------------- #############
+########################################################################################################
 
 # Plotly login
 # DO NOT CHANGE THIS CONFIGURATION (Use my login)

@@ -17,22 +17,44 @@ library(reshape2)
 #function to get the data formatted correctly, replace individual na_values, remove entirely NA rows, and other preliminary processing
 preliminary_processing <- function(df) {
   
-  #!!!!!!!!!!!!!!!!!!!! MUST CHANGE FROM confluency_data etc. 
-  confluency_data <- df[,c(1:which(colnames(df) == last_timepoint)[1])]
-  sytoxG_data <- df[,c(1:which(colnames(df) == "Screen"),which(colnames(df) == "phenotypic_Marker")[2]:ncol(df))]
-  df <- rbind(confluency_data,sytoxG_data)
+  # Indeces of phenotypic markers in data frame
+  pheno_marker_indeces <- which(colnames(df) == "phenotypic_Marker")
+  
+  # For each phenotypic marker, get a new data frame
+  df_each_marker <- list()
+  for (i in 1:length(pheno_marker_indeces)) {
+    if (i == length(pheno_marker_indeces)) { # if we're at the last phenotypic marker 
+      df_new_marker <- df[ , c(1:which(colnames(df) == "Screen"), pheno_marker_indeces[i]:ncol(df))]
+    } else { # if not
+      df_new_marker <- df[ , c(1:which(colnames(df) == "Screen"), pheno_marker_indeces[i]:(pheno_marker_indeces[i+1]-1))]
+    }
+    df_each_marker[[i]] <- df_new_marker
+  }
+  
+  # Bind all marker data frames together
+  df <- do.call("rbind", df_each_marker)
   df <- df[,colSums(is.na(df))<nrow(df)] #remove columns where ALL values are NA
   
+  ### Turn factors to characters before string edits, and turn al NA's to "NA" as a string, otherwise errors occur ###
+  for (i in 1:(which(colnames(df) == "phenotypic_Marker")[1]-1)) {
+    if (class(df[[i]]) == "factor") {
+      df[[i]] <- as.character(df[[i]])
+      df[[i]][which(is.na(df[[i]]))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
+    }
+  }
+    
   # Add a "NegControl" pathway label
-  df$Pathway <- as.character(df$Pathway)
-  df$Pathway[which(is.na(df$Pathway))] <- "NA" # Turn all NA's to "NA" as string, before turning some of these to "NegControl". Otherwise, errors occur. 
   df$Pathway[which(df$Compound == "Empty")] <- "NegControl"
-  df$Pathway <- as.factor(df$Pathway)
-  df$Pathway <- relevel(df$Pathway, ref = "NegControl")
+
+  ### Turn characters to factors after string edits ###
+  for (i in 1:(which(colnames(df) == "phenotypic_Marker")[1]-1)) {
+    if (class(df[[i]]) == "character") {
+      df[[i]] <- as.factor(df[[i]])
+    }
+  }
   
-  # Turn to NA's
-  df$Target.class..11Mar15.[which(is.na(df$Target.class..11Mar15.))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
-  df$Targets..as.supplied.[which(is.na(df$Targets..as.supplied.))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
+  # Level Negative Control as reference for pathways
+  df$Pathway <- relevel(df$Pathway, ref = "NegControl")
   
   # Rename "empty" wells by appending their plate and position
   df$Compound <- as.character(df$Compound) #required for changing Empty compound names to include plate & position
@@ -192,13 +214,25 @@ get_features <- function(df) {
 
 #END FUNCTIONS
 
+#############################################################################################
+####### --------------------------- Reformat the data ------------------------------- #######
+#############################################################################################
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# First time point in data (in hours)
+# ex. "0"
+first_timepoint <- "0"
 
-# load the data
-data_from_reconfigure <- read.csv(file=data_filename, header=T, check.names=F, row.names=1)
+# Last time point in data (in hours)
+# ex. "46"
+last_timepoint <- "46"
+
+# Interval (in hours) between time points
+# ex. "2"
+time_interval <- "2"
 
 # preliminary processing on data (data is in wide format, hence the variable name)
-data_wide <- preliminary_processing(data_from_reconfigure)
+data_wide <- preliminary_processing(data_reconfigured)
 
 # add initial metrics
 data_tall <- add_initial_metrics(data_wide, 
