@@ -25,6 +25,30 @@ phenotypic_marker_names <- c("Sytox Green", "Confluency")
 # ex. c("SG", "Con")
 phenotypic_markers <- c("SG", "Con") 
 
+# Number of plates in screen (as integer)
+num_plates <- 5
+
+# Number of wells per plate (as integer)
+num_wells_per_plate <- 384
+
+# Number of "letters" for the screen (ex. A1, B1, C1 ... if goes up to letter P, would be 16 letters) (as integer)
+num_letters <- 16
+
+# Number of "numbers" for the screen (ex. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers) (as integer)
+num_numbers <- 24 
+
+# First time point in data (in hours) (as string)
+# ex. "0"
+first_timepoint <- "0"
+
+# Last time point in data (in hours) (as string)
+# ex. "46"
+last_timepoint <- "46"
+
+# Interval (in hours) between time points (as string)
+# ex. "2"
+time_interval <- "2"
+
 # The name of your IncuCyte screen
 # e.g. "C2C12 Diff Tunicamycin"
 screen_name <- "C2C12 Diff Tunicamycin"

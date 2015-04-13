@@ -218,19 +218,6 @@ get_features <- function(df) {
 ####### --------------------------- Reformat the data ------------------------------- #######
 #############################################################################################
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# First time point in data (in hours)
-# ex. "0"
-first_timepoint <- "0"
-
-# Last time point in data (in hours)
-# ex. "46"
-last_timepoint <- "46"
-
-# Interval (in hours) between time points
-# ex. "2"
-time_interval <- "2"
-
 # preliminary processing on data (data is in wide format, hence the variable name)
 data_wide <- preliminary_processing(data_reconfigured)
 

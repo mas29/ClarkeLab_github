@@ -9,19 +9,14 @@ library(dataframes2xls)
 # source("Scripts/Configure.R")
 
 numPhenotypicMarkers <- length(phenotypic_markers) # number of phenotypic markers you're using
-num_plates <- 5
-num_wells_per_plate <- 384
-num_letters <- 16 # Number of "letters" for the screen (ex. A1, B1, C1 ... if goes up to letter P, would be 16 letters)
-num_numbers <- 24 # Number of "numbers" for the screen (ex. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers)
-# !!!!!!!!!!!!!!!
-# order of phenotypic markers
 
 
 #Creates a column vector that contains the desired screen name.  To customzie the screen name, 
 #change the variable named "screen_name" above to whatever name you want, remember to keep the name in quotations.
 getScreenName <- function(){
   
-  screenNamesVec <- as.factor(rep(screen_name, (num_plates*num_wells_per_plate)))
+  screenNamesVec <- data.frame(rep(screen_name, (num_plates*num_wells_per_plate)))
+  colnames(screenNamesVec) <- "Screen"
   
   return(screenNamesVec)
 }
