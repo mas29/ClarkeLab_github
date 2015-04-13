@@ -9,7 +9,10 @@ dir <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
 # Run configure file 
 source(paste(dir,"Scripts/Configure.R",sep=""))
 
-# Get the data
+# Reconfigure the data 
+source(paste(dir,"Scripts/Reconfigure_ms_edits.R",sep=""))
+
+# Reformat the data
 source(paste(dir,"Scripts/GetData.R",sep=""))
 
 # -------------------------------------------------

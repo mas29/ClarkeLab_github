@@ -17,11 +17,11 @@ selleck_info_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_git
 # ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
 raw_data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
 
-# Phenotypic marker names as comprehensible by user (order must agree between phenotypic_marker_names and phenotypic_markers)
+# Phenotypic marker names as comprehensible by user (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
 # ex. c("Sytox Green", "Confluency")
 phenotypic_marker_names <- c("Sytox Green", "Confluency")
 
-# Phenotypic marker names as they appear in the data_filename file
+# Phenotypic marker names as they appear in the raw_data_filename tabs (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
 # ex. c("SG", "Con")
 phenotypic_markers <- c("SG", "Con") 
 

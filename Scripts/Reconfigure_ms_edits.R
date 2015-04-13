@@ -11,76 +11,43 @@ library(dataframes2xls)
 numPhenotypicMarkers <- length(phenotypic_markers) # number of phenotypic markers you're using
 num_plates <- 5
 num_wells_per_plate <- 384
+num_letters <- 16 # Number of "letters" for the screen (ex. A1, B1, C1 ... if goes up to letter P, would be 16 letters)
+num_numbers <- 24 # Number of "numbers" for the screen (ex. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers)
+# !!!!!!!!!!!!!!!
+# order of phenotypic markers
+
 
 #Creates a column vector that contains the desired screen name.  To customzie the screen name, 
 #change the variable named "screen_name" above to whatever name you want, remember to keep the name in quotations.
 getScreenName <- function(){
   
-  screenNamesVec <- NULL
-  count = 1
-  
-  for(i in 1:num_plates){
-    for(j in 1:num_wells_per_plate){
-      screenNamesVec[count] <- screen_name
-      count = count + 1
-    }
-  }
-  
-  screenNamesVec = t(screenNamesVec)
-  screenNamesVec = t(screenNamesVec)
-  
-  colnames(screenNamesVec) <- "Screen"
+  screenNamesVec <- as.factor(rep(screen_name, (num_plates*num_wells_per_plate)))
   
   return(screenNamesVec)
 }
 
-#Using a key I created that has each of the 5 384-well plates on a different tab in an excel file, this function
+#Using a key Giovanni created with each plate and phenotypic marker on a different tab in an excel file, this function
 #lists all of the names of the compounds in an order that goes from plate 1-5 a1-a24, b1-b24...p1-p24.
 reconfigureCompoundNames <- function() {
+  
   cmpNameKey <- loadWorkbook(key_filename)
-  tempList <- list()
   LIST = readWorksheet(cmpNameKey, sheet = getSheets(cmpNameKey))
-  tempList[1] = list(LIST)
-  
-  keyList <- list()
-  
-  for (i in 1:length(tempList[[1]])) {
-    keyList[[i]] <- data.frame(tempList[[1]][i])
-  }
-  
-  combinedFrames <- NULL
-  newColNames <- (1:24)
-  
-  for (i in 1:length(keyList)) {
-    colnames(keyList[[i]]) <- newColNames
-    combinedFrames <- rbind(combinedFrames, keyList[[i]])
-  }
-  
-  rowLength <- length(combinedFrames[1,])
-  colLength <- length(combinedFrames[,1])
-  
-  newRowNames <- 1:(rowLength*colLength)
   
   cmpNameVector <- NULL
-  
-  for(i in 1:colLength){
-    vec <- combinedFrames[i,]
-    vec <- t(vec)
-    cmpNameVector <- rbind(cmpNameVector,vec)
+  for (i in 1:length(LIST)) {
+    newCmpNameVector <- as.vector(t(LIST[[i]]))
+    cmpNameVector <- c(cmpNameVector, newCmpNameVector )
   }
-  
-  row.names(cmpNameVector) <- newRowNames
-  colnames(cmpNameVector) <- "Compound"
-  
+  cmpNameVector <- as.vector(cmpNameVector)
+ 
   return(cmpNameVector)
-  
 }
 
 #Uses a nested for loop to create a column vector that contains all of the plate positions in the correct order.
 getPlatePositions<-function(){
   
-  lettersVec <- letters[1:16]
-  numVec <- 1:24
+  lettersVec <- letters[1:num_letters]
+  numVec <- 1:num_numbers
   platePositions <- NULL
   count = 1
   
@@ -136,52 +103,14 @@ getDescriptions<- function(){
   
   descriptionKey <- read.xls(selleck_info_filename,sheet=1)
   descriptionKey <- data.frame(descriptionKey)
-  #	print(descriptionKey)
-  
-  cmpNames <- descriptionKey[,2]
   
   plateNameVector <- reconfigureCompoundNames()
   
-  for(i in 1:length(cmpNames)){
-    
-    currName = cmpNames[i]
-    index = which(plateNameVector == currName)
-    vec <- data.frame(descriptionKey[i,])
-    descriptionVector[index] <- list(vec)
-    
-  }
-  
-  length(descriptionVector) = (num_plates*num_wells_per_plate)
-  
-  for(i in 1:length(descriptionVector)){
-    
-    if(descriptionVector[i] == "NULL"){
-      descriptionVector[i] <- "POSITIVE CONTROL"
-    }	
-  }
-  
-  combinedDescriptions <- NULL	
-  normalColNames <- colnames(data.frame(descriptionVector[1]))
-  replace <- LETTERS[1:13]
-  
-  # Changed from 13 columns to 17 columns for new updated selleck information excel doc given March 15, 2015 (Selleck_1833_LibraryAnnotation_Mar15.xlsx)
-  tempRow <- matrix(c(rep.int(NA,17)), nrow = 1, ncol = 17)
-  newRow <- data.frame(tempRow)	
-  colnames(newRow) <- colnames <- normalColNames
-  
-  for(i in 1:length(descriptionVector)){
-    
-    temporaryVec <- data.frame(descriptionVector[i])
-    if(length(temporaryVec) == 1){
-      temporaryVec <- newRow
-    }
-    combinedDescriptions <- rbind(combinedDescriptions, temporaryVec)	
-  }			
-  
-  # Changed from 13 columns to 17 columns for new updated selleck information excel doc given March 15, 2015 (Selleck_1833_LibraryAnnotation_Mar15.xlsx)
-  combinedDescriptions <- data.frame(combinedDescriptions)
-  combinedDescriptions <- combinedDescriptions[,c(1,4:17)]
-  
+  descriptionKey <- descriptionKey[1:1833,] # The rows after 1833 are blank
+  rownames(descriptionKey) <- descriptionKey$Product.Name
+  descriptionKey <- descriptionKey[plateNameVector, ]
+  combinedDescriptions <- descriptionKey[,c(1,4:ncol(descriptionKey))]
+
   return(combinedDescriptions)
 }
 
@@ -194,7 +123,12 @@ getRawData <- function(){
   dataList <- list()
   
   wb <- loadWorkbook(raw_data_filename)
-  LIST = readWorksheet(wb, sheet = getSheets(wb), startRow = 8)
+
+  # Get the starting row of the data in the worksheets
+  temp <- readWorksheet(wb, sheet = 1)
+  startRow <- which(temp[1] == "Date Time") + 1
+  
+  LIST = readWorksheet(wb, sheet = getSheets(wb), startRow = startRow)
   dataList[1] <- list(LIST)
   
   tempFrame <- data.frame(dataList[[1]][1])
@@ -217,16 +151,16 @@ getRawData <- function(){
       
       startCol = 1
       #once for each letter
-      for(j in 1:16){
+      for(j in 1:num_letters){
         
         #get all columns of same letter
-        for(k in 1:24){
+        for(k in 1:num_numbers){
           tempCol <- data.frame(frame[,startCol + (k-1)])
           tempCol = t(tempCol)
           colnames(tempCol) <- elapsedTime
           currDataFrame <- rbind(currDataFrame, tempCol)
         }
-        startCol = startCol + 24		
+        startCol = startCol + num_numbers		
       }
       count = count + numPhenotypicMarkers	
     }
@@ -270,6 +204,11 @@ combine<-function(){
   return(totalFrame)	
   
 }
+
+###### DELETE AFTER
+test_df <- combine()
+######
+
 
 # Create reconfigured data, write to file
 data_reconfigured <- combine()
