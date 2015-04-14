@@ -1585,3 +1585,19 @@ write.csv(data_reconfigured,file = paste(dir, "Output/data_reconfigured.csv", se
 
 
 time_interval <- "2"
+
+
+#       fluor_image_dir <- paste(archive_dir,expt_days[i],"/",expt_hrs_mins[[i]][j],"/",plate_name_in_archive,"/",toupper(position),fluor_suffix,sep="")
+#       phase_cont_image_dir <- paste(archive_dir,expt_days[i],"/",expt_hrs_mins[[i]][j],"/",plate_name_in_archive,"/",toupper(position),phase_cont_suffix,sep="")
+#       
+#       fluor_img <- suppressWarnings(readTIFF(fluor_image_dir, native=TRUE))
+#       writeJPEG(fluor_img, target = paste(dir,"Scripts/shiny_scripts/explore/www/C1_t_",as.character(time_elapsed[count]),".jpeg",sep=""), quality = 1)
+#       phase_cont_img <- suppressWarnings(readTIFF(phase_cont_image_dir, native=TRUE))
+#       writeJPEG(phase_cont_img, target = paste(dir,"Scripts/shiny_scripts/explore/www/P_t_",as.character(time_elapsed[count]),".jpeg",sep=""), quality = 1)
+
+#   phase_cont_suffix <- "-1-P.tif" # fluorescence image suffix
+#   fluor_suffix <- "-1-C1.tif" # phase-contrast image suffix
+
+#  h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
+#   autoplay = NA, controls = "controls"))),
+# img(src = "phase_cont_t_0.jpeg", width = "696px", height = "520px")), #### SOOO FAST, but I don't know how to make it reactive....

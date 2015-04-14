@@ -292,4 +292,6 @@ data_tall_features_each_marker <- as.list(setNames(data_tall_features_each_marke
 
 # Set phenotypic marker name correlations (ex. "Sytox Green" --> "SG")
 phenotypic_markers <- setNames(phenotypic_markers, phenotypic_marker_names)
+# Set image type name correlations (ex. "Phase-Contrast" --> "P")
+image_types <- setNames(image_types, image_type_names)
 

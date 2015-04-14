@@ -6,6 +6,9 @@ source(paste(dir, "Scripts/GetData.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_compound.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_target.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_pathway.R", sep=""))
+source(paste(dir, "Scripts/GetImagesForCompound.R", sep=""))
+
+# WARNING: The first time the app loads, it takes a minute to load images, plots. Afterwards, it runs smoothly.
 
 #####################################################################################
 ###### --------------------- Define server logic ----------------------------- ######
@@ -125,9 +128,27 @@ shinyServer(function(input, output) {
     plot_pathway_clusters(data_tall.clusters, input$pathway, input$pathway.marker)
   })
   
+  output$display.image <- renderImage({
+    
+    # Get images for that compound into www folder of shiny app
+    suppressWarnings(get_images(input$compound))
+    
+    image_file <- paste("www/",image_types[[input$image.type]],"_t_",input$time.elapsed,".jpeg",sep="")
+    
+    return(list(
+      src = image_file,
+      filetype = "image/jpeg",
+      height = 520,
+      width = 696
+    ))
+    
+  }, deleteFile = FALSE)
+  
   
   #   # Generates table of additional information for the compound
   #   output$compound.additional_info <- renderDataTable(
   #     data_tall_each_marker[[input$marker]][data_tall_each_marker[[input$marker]]$Compound == input$compound, ]
   #   )
+  
+  #!!!!!! would be nice to add an export button to the shiny app for exportin the jpegs of the given compound...
 })

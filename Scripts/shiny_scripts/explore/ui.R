@@ -32,15 +32,19 @@ shinyUI(navbarPage("Perspective:",
                                             "Number of Clusters:",
                                             min = 1,
                                             max = 25,
-                                            value = 10)
+                                            value = 10),
+                                sliderInput("time.elapsed", "Time Elapsed:", 
+                                            min = head(time_elapsed, n=1), 
+                                            max = tail(time_elapsed, n=1), 
+                                            value = head(time_elapsed, n=1), 
+                                            step= (head(time_elapsed, n=2)[2]-head(time_elapsed, n=2)[1])),
+                                radioButtons("image.type", "Image Type:", image_type_names)
                               ),
                               
                               mainPanel(
                                 tabsetPanel(
                                   tabPanel("Live Images", 
-                                           #  h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
-                                           #   autoplay = NA, controls = "controls"))),
-                                           img(src = "Converted.jpeg", width = "696px", height = "520px")),
+                                           imageOutput("display.image")),
                                   tabPanel("Sparkline", plotOutput("compound.sparklines")
                                            # ,textOutput("compound.additional_info")
                                   ), 
