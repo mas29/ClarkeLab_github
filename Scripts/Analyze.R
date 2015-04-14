@@ -15,6 +15,7 @@ source(paste(dir,"Scripts/Reconfigure_ms_edits.R",sep=""))
 # Reformat the data
 source(paste(dir,"Scripts/GetData.R",sep=""))
 
+
 # -------------------------------------------------
 
 # Libraries for RMardowns
@@ -65,5 +66,10 @@ browseURL("QQPlotsAndDensityPlots.html")
 
 # Explore individual compounds
 setwd("../Scripts")
-runApp("shiny_scripts/explore_compound", launch.browser = TRUE)
+runApp("shiny_scripts/explore", launch.browser = TRUE)
+# !!!!!!!!
+runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/explore", launch.browser = TRUE)
+
+
+
 

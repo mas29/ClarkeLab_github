@@ -25,8 +25,8 @@ getScreenName <- function(){
 #lists all of the names of the compounds in an order that goes from plate 1-5 a1-a24, b1-b24...p1-p24.
 reconfigureCompoundNames <- function() {
   
-  cmpNameKey <- loadWorkbook(key_filename)
-  LIST = readWorksheet(cmpNameKey, sheet = getSheets(cmpNameKey))
+  cmpNameKey <- XLConnect::loadWorkbook(key_filename)
+  LIST = readWorksheet(cmpNameKey, sheet = c(1:num_plates))
   
   cmpNameVector <- NULL
   for (i in 1:length(LIST)) {
@@ -34,8 +34,9 @@ reconfigureCompoundNames <- function() {
     cmpNameVector <- c(cmpNameVector, newCmpNameVector )
   }
   cmpNameVector <- as.vector(cmpNameVector)
- 
-  return(cmpNameVector)
+  Compound <- cmpNameVector
+  
+  return(Compound)
 }
 
 #Uses a nested for loop to create a column vector that contains all of the plate positions in the correct order.
@@ -117,13 +118,14 @@ getRawData <- function(){
   
   dataList <- list()
   
-  wb <- loadWorkbook(raw_data_filename)
+  wb <- XLConnect::loadWorkbook(raw_data_filename)
 
   # Get the starting row of the data in the worksheets
   temp <- readWorksheet(wb, sheet = 1)
   startRow <- which(temp[1] == "Date Time") + 1
   
-  LIST = readWorksheet(wb, sheet = getSheets(wb), startRow = startRow)
+  # Number of sheets is the number of plates * the number of phenotypic markers
+  LIST = readWorksheet(wb, sheet = c(1:(num_plates*length(phenotypic_markers))), startRow = startRow)
   dataList[1] <- list(LIST)
   
   tempFrame <- data.frame(dataList[[1]][1])
@@ -199,11 +201,6 @@ combine<-function(){
   return(totalFrame)	
   
 }
-
-###### DELETE AFTER
-test_df <- combine()
-######
-
 
 # Create reconfigured data, write to file
 data_reconfigured <- combine()

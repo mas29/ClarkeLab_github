@@ -17,6 +17,8 @@ library(reshape2)
 #function to get the data formatted correctly, replace individual na_values, remove entirely NA rows, and other preliminary processing
 preliminary_processing <- function(df) {
   
+  colnames(df)[1] <- "Compound"
+  
   # Indeces of phenotypic markers in data frame
   pheno_marker_indeces <- which(colnames(df) == "phenotypic_Marker")
   
@@ -42,10 +44,10 @@ preliminary_processing <- function(df) {
       df[[i]][which(is.na(df[[i]]))] <- "NA" # Turn all NA's to "NA" as string, otherwise, errors occur.
     }
   }
-    
+  
   # Add a "NegControl" pathway label
   df$Pathway[which(df$Compound == "Empty")] <- "NegControl"
-
+  
   ### Turn characters to factors after string edits ###
   for (i in 1:(which(colnames(df) == "phenotypic_Marker")[1]-1)) {
     if (class(df[[i]]) == "character") {
@@ -61,7 +63,7 @@ preliminary_processing <- function(df) {
   df[which(df$Compound == "Empty"),'Compound'] <- #changing Empty compound names to include plate & position
     with(df, paste(Compound, Plate, Position, sep = "_"))[which(df$Compound == "Empty")]
   df[which(colnames(df) == first_timepoint):which(colnames(df) == last_timepoint)][is.na(df[which(colnames(df) == first_timepoint):which(colnames(df) == last_timepoint)])] <- na_value #fill in NA values with na value specified (0.23, or 1/4 of a cell)
-
+  
   # Remove invalid XML characters (ex. "\x95")
   df$Compound <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Compound) 
   df$Information <- gsub("[\x01-\x1f\x7f-\xff]", "", df$Information) 
@@ -121,6 +123,7 @@ get_confidence_intervals_neg_controls <- function(df, phenotypic_Marker, first_t
 # param end -- end of numbers
 # param time_elapsed -- numeric vector of time elapsed (ex. 0, 2, 4...)
 add_initial_metrics <- function(df, start, end, time_elapsed) {
+  # Add metrics
   df$mean <- apply(df[start:end], 1, mean)
   df$min <- apply(df[start:end], 1, min)
   df$max <- apply(df[start:end], 1, max)
@@ -218,14 +221,26 @@ get_features <- function(df) {
 ####### --------------------------- Reformat the data ------------------------------- #######
 #############################################################################################
 
+# Get time elapsed information
+last_pheno_marker_index <- tail(which(colnames(data_reconfigured) == "phenotypic_Marker"), n=1)
+time_elapsed <- colnames(data_reconfigured[(last_pheno_marker_index + 1):ncol(data_reconfigured)])
+first_timepoint <- head(time_elapsed, n=1)
+last_timepoint <- tail(time_elapsed, n=1)
+time_elapsed <- as.numeric(time_elapsed)
+
 # preliminary processing on data (data is in wide format, hence the variable name)
 data_wide <- preliminary_processing(data_reconfigured)
 
+# Change to numeric  type
+for (i in which(colnames(data_wide)==first_timepoint):which(colnames(data_wide)==last_timepoint)) {
+  data_wide[,i] <- as.numeric(data_wide[,i])
+}
+
 # add initial metrics
 data_tall <- add_initial_metrics(data_wide, 
-                                              which(colnames(data_wide)==first_timepoint), 
-                                              which(colnames(data_wide)==last_timepoint), 
-                                              seq(as.numeric(first_timepoint),as.numeric(last_timepoint),as.numeric(time_interval)))
+                                 which(colnames(data_wide)==first_timepoint), 
+                                 which(colnames(data_wide)==last_timepoint), 
+                                 time_elapsed)
 
 # reshape to tall data frame
 data_tall <- melt(data_tall, measure.vars=(colnames(data_tall)[which(colnames(data_tall)==first_timepoint):which(colnames(data_tall)==last_timepoint)]))

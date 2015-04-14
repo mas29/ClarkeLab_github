@@ -15,15 +15,15 @@ selleck_info_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_git
 
 # Filename and path for data from incucyte (all in one excel document, different plates and markers on different sheets) 
 # ex. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
-raw_data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
+raw_data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/Test_Datasets/forcina_tunicamycin_1833_modulation.xlsx"
 
 # Phenotypic marker names as comprehensible by user (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
-# ex. c("Sytox Green", "Confluency")
-phenotypic_marker_names <- c("Sytox Green", "Confluency")
+# ex. c("Confluency", "Sytox Green")
+phenotypic_marker_names <- c("Confluency", "Sytox Green", "NLS")
 
 # Phenotypic marker names as they appear in the raw_data_filename tabs (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
-# ex. c("SG", "Con")
-phenotypic_markers <- c("SG", "Con") 
+# ex. c("Con", "SG")
+phenotypic_markers <- c("Con", "SG", "NLS") 
 
 # Number of plates in screen (as integer)
 num_plates <- 5
@@ -36,18 +36,6 @@ num_letters <- 16
 
 # Number of "numbers" for the screen (ex. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers) (as integer)
 num_numbers <- 24 
-
-# First time point in data (in hours) (as string)
-# ex. "0"
-first_timepoint <- "0"
-
-# Last time point in data (in hours) (as string)
-# ex. "46"
-last_timepoint <- "46"
-
-# Interval (in hours) between time points (as string)
-# ex. "2"
-time_interval <- "2"
 
 # The name of your IncuCyte screen
 # e.g. "C2C12 Diff Tunicamycin"
