@@ -672,10 +672,8 @@ opts_chunk$set(out.width='3000px', dpi=800)
 
 # This works, but not for SG and Con together
 
-get_time_x_distance <- function(confidence_intervals, df, first_timepoint_index, last_timepoint_index, time_interval) {
-  
-  
-  
+get_time_x_distance_old <- function(confidence_intervals, df, first_timepoint_index, last_timepoint_index, time_interval) {
+
   time_x_distance <- apply(df[, first_timepoint_index:last_timepoint_index],1,function(y) {
     time_interval*sum(apply(rbind(y,confidence_intervals),2,function(x) (x[1]-x[2])))
   })
@@ -1601,3 +1599,48 @@ time_interval <- "2"
 #  h6("Live Images:", br(), tags$video(src = "video.mp4", type = "video/mp4", width = "600px", height = "600px", 
 #   autoplay = NA, controls = "controls"))),
 # img(src = "phase_cont_t_0.jpeg", width = "696px", height = "520px")), #### SOOO FAST, but I don't know how to make it reactive....
+
+
+#   expt_days <- list.files(path = archive_dir) # Experiment days
+expt_hrs_mins <- list()
+for (j in 1:length(expt_days)) {
+  expt_new_hrs_mins <- list.files(path = paste(archive_dir,expt_days[j],sep=""))
+  expt_hrs_mins[[j]] <- expt_new_hrs_mins
+}
+expt_hrs_mins <- as.list(setNames(expt_hrs_mins, expt_days))
+return(expt_hrs_mins)
+
+
+img <- readTIFF("/Users/maiasmith/Desktop/ClarkeLab_images/A1-1-P_282.tiff", native=TRUE)
+writeJPEG(img, target = "/Users/maiasmith/Desktop/ClarkeLab_images/Converted.jpeg", quality = 1)
+
+
+getPlatePositions<-function(){
+  
+  lettersVec <- letters[1:num_letters]
+  numVec <- 1:num_numbers
+  platePositions <- NULL
+  count = 1
+  
+  for(i in 1:length(numVec)){
+    for(j in 1:length(lettersVec)){
+      
+      position = sprintf("%s%d",lettersVec[j],numVec[i])
+      platePositions[count] = position
+      count = count + 1	
+    }
+  }
+  
+  platePositions = t(platePositions)
+  platePositions = t(platePositions)	
+  colnames(platePositions) = "Position"
+  
+  finalPositions <- NULL
+  
+  for(i in 1:num_plates){
+    finalPositions <- rbind(finalPositions, platePositions)		
+  }
+  
+  return(finalPositions)	
+}
+

@@ -6,6 +6,7 @@ source(paste(dir, "Scripts/GetData.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_compound.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_target.R", sep=""))
 source(paste(dir, "Scripts/shiny_scripts/explore/explore_pathway.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_QC.R", sep=""))
 source(paste(dir, "Scripts/GetImagesForCompound.R", sep=""))
 
 # WARNING: The first time the app loads, it takes a minute to load images, plots. Afterwards, it runs smoothly.
@@ -143,6 +144,13 @@ shinyServer(function(input, output) {
     ))
     
   }, deleteFile = FALSE)
+  
+  # Plot the negative controls vs treatment for specified phenotypic marker
+  output$QC.by.plate <- renderPlot({
+    
+    plot_QC_by_plate(data_tall_each_marker[[input$QC.marker]], phenotypic_markers[[input$QC.marker]])
+    
+  })
   
   
   #   # Generates table of additional information for the compound

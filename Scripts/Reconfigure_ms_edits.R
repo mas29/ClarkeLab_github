@@ -124,8 +124,13 @@ getRawData <- function(){
   temp <- readWorksheet(wb, sheet = 1)
   startRow <- which(temp[1] == "Date Time") + 1
   
+  # Plate positions
+  positions <- c("Date.Time", "Elapsed", as.vector(toupper(getPlatePositions()))[1:(num_letters*num_numbers)])
+  
   # Number of sheets is the number of plates * the number of phenotypic markers
   LIST = readWorksheet(wb, sheet = c(1:(num_plates*length(phenotypic_markers))), startRow = startRow)
+  LIST <- lapply(LIST, function(x) x[,positions])
+  
   dataList[1] <- list(LIST)
   
   tempFrame <- data.frame(dataList[[1]][1])

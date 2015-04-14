@@ -165,12 +165,14 @@ add_metrics_compare_to_NC <- function(prelim_df, df, phenotypic_markers, first_t
     df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,sep="")] <- df$phenotype_value - df[,phenotype_value.NC.col] # Get difference to confidence interval's upper value for each timepoint
     sum_diff.to.NC <- aggregate(df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,sep="")], by=list(df$Compound, df$phenotypic_Marker), FUN=sum) # Sum differences for each compound for each phenotypic marker
     colnames(sum_diff.to.NC) <- c("Compound", "phenotypic_Marker", paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep=""))
-    sum_diff.to.NC$time_x_distance <- sum_diff.to.NC[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep="")] * as.numeric(time_interval) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
+    # WARNING: this assumes a constant time interval between data capture times in incucyte output
+    sum_diff.to.NC$time_x_distance <- sum_diff.to.NC[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep="")] * (time_elapsed[2]-time_elapsed[1]) # Multiply this sum by the time interval, to get the time X distance value (essentially, AUC of compound - AUC of neg control)
     df <- merge(df, sum_diff.to.NC, by = c("Compound", "phenotypic_Marker"), all.x=T, sort=F) # Add time x distance to data
     colnames(df)[which(colnames(df) == "time_x_distance")] <- paste("time_x_distance.",upper_lower_or_mean,sep="")
     df[,paste("phenotypic_value.diff.to.NC.",upper_lower_or_mean,".sum",sep="")] <- NULL # No point in keeping the sum of differences if we have the time X distance
     return(df)
   }
+  
   df <- get_time_x_distance("phenotype_value.NC.upper", "upper")
   df <- get_time_x_distance("phenotype_value.NC.mean", "mean")
   df <- get_time_x_distance("phenotype_value.NC.lower", "lower")

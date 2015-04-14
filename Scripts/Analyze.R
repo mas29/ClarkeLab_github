@@ -33,42 +33,37 @@ library(RColorBrewer)
 library(shiny)
 
 
-# Get the analyses and open them in a browser
-setwd("../RMarkdowns")
-
 # Quality Control
-knitr::knit2html("QC.Rmd")
-browseURL("QC.html")
+knitr::knit2html("RMarkdowns/QC.Rmd")
+browseURL("RMarkdowns/QC.html")
 
 # "Bricks" plot of all sparklines 
-knitr::knit2html("AllSparklines.Rmd")
-browseURL("AllSparklines.html")
+knitr::knit2html("RMarkdowns/AllSparklines.Rmd")
+browseURL("RMarkdowns/AllSparklines.html")
 
 # Pathway Analysis
-knitr::knit2html("PathwayAnalysis.Rmd")
-browseURL("PathwayAnalysis.html")
+knitr::knit2html("RMarkdowns/PathwayAnalysis.Rmd")
+browseURL("RMarkdowns/PathwayAnalysis.html")
 
 # Target Analysis
-knitr::knit2html("TargetAnalysis.Rmd")
-browseURL("TargetAnalysis.html")
+knitr::knit2html("RMarkdowns/TargetAnalysis.Rmd")
+browseURL("RMarkdowns/TargetAnalysis.html")
 
 # Early-Acting vs Late-Acting Analysis
-knitr::knit2html("EarlyActingVsLateActingCurves.Rmd")
-browseURL("EarlyActingVsLateActingCurves.html")
+knitr::knit2html("RMarkdowns/EarlyActingVsLateActingCurves.Rmd")
+browseURL("RMarkdowns/EarlyActingVsLateActingCurves.html")
 
 # Cluster Analysis
-knitr::knit2html("ClusterAnalysis.Rmd")
-browseURL("ClusterAnalysis.html")
+knitr::knit2html("RMarkdowns/ClusterAnalysis.Rmd")
+browseURL("RMarkdowns/ClusterAnalysis.html")
 
 # QQ Plots and Density Plots of Negative Controls vs Treatments
-knitr::knit2html("QQPlotsAndDensityPlots.Rmd")
-browseURL("QQPlotsAndDensityPlots.html")
+knitr::knit2html("RMarkdowns/QQPlotsAndDensityPlots.Rmd")
+browseURL("RMarkdowns/QQPlotsAndDensityPlots.html")
 
 # Explore individual compounds
-setwd("../Scripts")
-runApp("shiny_scripts/explore", launch.browser = TRUE)
-# !!!!!!!!
-runApp("/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Scripts/shiny_scripts/explore", launch.browser = TRUE)
+runApp("Scripts/shiny_scripts/explore", launch.browser = TRUE)
+
 
 
 

@@ -114,6 +114,21 @@ shinyUI(navbarPage("Perspective:",
                                 )
                               )
                             )
+                   ),
+                   tabPanel("QC",
+                            
+                            # Application title
+                            titlePanel("Quality Control"),
+                            
+                            # Layout
+                            sidebarLayout(
+                              
+                              sidebarPanel(
+                                radioButtons("QC.marker", "Phenotypic Marker:", phenotypic_marker_names)
+                              ),
+                              
+                              mainPanel(plotOutput("QC.by.plate"))
+                            )
                    )
 ))
 

@@ -5,9 +5,9 @@ library(plotly)
 ############# ------------------- Change the following configurations -------------------- #############
 ########################################################################################################
 
-# Directory of the archive for the IncuCyte images (point to EssenFiles/ScanData/XXXX file, where XXXX is the YY/MM (year/month) of your experiment)
-# e.g. "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/1409/" 
-archive_dir <- "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/1409/" 
+# Directory of the archive for the IncuCyte images (point to EssenFiles/ScanData/ directory)
+# e.g. "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/" 
+archive_dir <- "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/" 
 
 # Filename and path for key 
 # e.g. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx"
@@ -19,14 +19,17 @@ selleck_info_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_git
 
 # Filename and path for data from incucyte (all in one excel document, different plates and markers on different sheets) 
 # e.g. "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx"
+# e.g. "/Users/maiasmith/Documents/SFU/ClarkeLab/Test_Datasets/forcina_tunicamycin_1833_modulation.xlsx"
 raw_data_filename <- "/Users/maiasmith/Documents/SFU/ClarkeLab/Test_Datasets/forcina_tunicamycin_1833_modulation.xlsx"
 
 # Phenotypic marker names as comprehensible by user (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
 # e.g. c("Confluency", "Sytox Green")
+# e.g. c("Confluency", "Sytox Green", "NLS")
 phenotypic_marker_names <- c("Confluency", "Sytox Green", "NLS")
 
 # Phenotypic marker names as they appear in the raw_data_filename tabs (IN THE ORDER THAT THEY APPEAR IN THE raw_data_filename TABS)
 # e.g. c("Con", "SG")
+# e.g. c("Con", "SG", "NLS") 
 phenotypic_markers <- c("Con", "SG", "NLS") 
 
 # Types of images output by the IncuCyte machine

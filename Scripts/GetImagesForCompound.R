@@ -3,24 +3,42 @@
 library("jpeg")
 library("tiff")
 library("animation")
-img <- readTIFF("/Users/maiasmith/Desktop/ClarkeLab_images/A1-1-P_282.tiff", native=TRUE)
-writeJPEG(img, target = "/Users/maiasmith/Desktop/ClarkeLab_images/Converted.jpeg", quality = 1)
 
-#!!!!! INCLUDE YEARS/MONTHS?
-# Function to get the folder structure of the archive directory
-archive_dir_orientation <- function() {
-  expt_days <- list.files(path = archive_dir) # Experiment days
+
+# Function to get the folder structure of the archive directory for year/month/days levels
+get_experiment_days <- function() {
+  # Experiment years/months
+  expt_yrs_months <- list.files(path = archive_dir) 
+  expt_days <- vector()
   expt_hrs_mins <- list()
-  for (i in 1:length(expt_days)) {
-    expt_new_hrs_mins <- list.files(path = paste(archive_dir,expt_days[i],sep=""))
-    expt_hrs_mins[[i]] <- expt_new_hrs_mins
+  
+  # For each year/month, get the experiment days
+  for (i in 1:length(expt_yrs_months)) { 
+    new_expt_days_list <- list.files(path = paste(archive_dir, "/", expt_yrs_months[i], sep=""))
+    new_expt_days <- vector()
+    for(j in 1:length(new_expt_days_list)) {
+      new_expt_days <- c(new_expt_days, paste(expt_yrs_months[i], "/", new_expt_days_list[j], sep=""))
+    }
+    expt_days <- c(expt_days, new_expt_days)
+  }
+  
+  return(expt_days)
+}
+
+# Function to get the folder structure of the archive directory for hours/mins level
+get_experiment_hours_and_mins <- function(expt_days) {
+  # For each year/month/day, get the hours/mins for the image data
+  expt_hrs_mins <- list()
+  for (j in 1:length(expt_days)) {
+    expt_new_hrs_mins <- list.files(path = paste(archive_dir,expt_days[j],sep=""))
+    expt_hrs_mins[[j]] <- expt_new_hrs_mins
   }
   expt_hrs_mins <- as.list(setNames(expt_hrs_mins, expt_days))
   return(expt_hrs_mins)
 }
 
 # Function to get plate numbers as they appear in the archive (e.g. folders 282, 283, 284, 285, 286  correspond to plates 1, 2, 3, 4, 5)
-get_plate_nums_in_archive_dir <- function() {
+get_plate_nums_in_archive_dir <- function(expt_days, expt_hrs_mins) {
   plate_nums_etc <- list.files(path = paste(archive_dir,expt_days[1],"/",expt_hrs_mins[[1]][1],sep=""))
   plate_nums <- plate_nums_etc[grep("^[[:digit:]]*$", plate_nums_etc)]
   return(plate_nums)
@@ -29,8 +47,9 @@ get_plate_nums_in_archive_dir <- function() {
 # Function to get the images corresponding to the compound of interest
 get_images <- function(compound) {
   # Get info for this compound
-  expt_hrs_mins <- archive_dir_orientation() # Get archive directory folder structure
-  plate_nums <- get_plate_nums_in_archive_dir() # Get names of plates as they exist in the archive
+  expt_days <- get_experiment_days() # Archive structure
+  expt_hrs_mins <- get_experiment_hours_and_mins(expt_days) # Archive structure
+  plate_nums <- get_plate_nums_in_archive_dir(expt_days, expt_hrs_mins) # Get names of plates as they exist in the archive
   position <- data_wide[data_wide$Compound == compound,]$Position[1] # Position of compound in plate
   plate <- data_wide[data_wide$Compound == compound,]$Plate[1] # Plate of compound
   
