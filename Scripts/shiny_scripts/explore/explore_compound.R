@@ -149,8 +149,8 @@ plot_clusters <- function(data_w_clusters, compound, phenotypic_marker_name) {
                       values = c('red'),
                       labels = c('Negative Control\n99.9% C.I.')) +
     xlab("Time Elapsed") +
-    ylab("Sytox Green") +
-    ggtitle("Sytox Green Sparklines for Each Cluster") +
+    ylab(phenotypic_marker_name) +
+    ggtitle(paste(phenotypic_marker_name, "Sparklines for Each Cluster", sep=" ")) +
     facet_grid(empty~cluster) +
     theme(panel.grid = element_blank(),
           panel.background = element_rect(fill = "white"),
