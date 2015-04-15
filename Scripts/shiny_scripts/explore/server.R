@@ -2,12 +2,15 @@ library(shiny)
 library(ggplot2)
 library(grid)
 
-source(paste(dir, "Scripts/GetData.R", sep=""))
-source(paste(dir, "Scripts/shiny_scripts/explore/explore_compound.R", sep=""))
-source(paste(dir, "Scripts/shiny_scripts/explore/explore_target.R", sep=""))
-source(paste(dir, "Scripts/shiny_scripts/explore/explore_pathway.R", sep=""))
-source(paste(dir, "Scripts/shiny_scripts/explore/explore_QC.R", sep=""))
-source(paste(dir, "Scripts/GetImagesForCompound.R", sep=""))
+source("../../GetData.R")
+source("../../GetImagesForCompound.R")
+source("explore_compound.R")
+source("explore_target.R")
+source("explore_pathway.R")
+source("explore_QC.R")
+source("explore_QQ_density_plots.R")
+source("explore_early_vs_late_acting.R")
+source("lists.R")
 
 # WARNING: The first time the app loads, it takes a minute to load images, plots. Afterwards, it runs smoothly.
 
@@ -149,6 +152,34 @@ shinyServer(function(input, output) {
   output$QC.by.plate <- renderPlot({
     
     plot_QC_by_plate(data_tall_each_marker[[input$QC.marker]], phenotypic_markers[[input$QC.marker]])
+    
+  })
+  
+  # Plot all sparklines for specified phenotypic marker
+  output$all.sparklines <- renderPlot({
+    
+    plot_all_sparklines(data_tall_each_marker[[input$overview.marker]], phenotypic_markers[[input$overview.marker]])
+    
+  })
+  
+  # QQ plot for specified phenotypic marker and curve metric
+  output$qq.plot.one.metric <- renderPlot({
+    
+    get_single_metric_qqplot(data_tall_each_marker[[input$metric.marker]], metrics[[input$metric]])
+    
+  })
+  
+  # QQ plot for specified phenotypic marker and curve metric
+  output$density.plot.one.metric <- renderPlot({
+    
+    get_single_metric_density(data_tall_each_marker[[input$metric.marker]], metrics[[input$metric]])
+    
+  })
+  
+  # QQ plot for specified phenotypic marker and curve metric
+  output$early.vs.late.acting <- renderPlot({
+    
+    get_early_vs_late_acting(data_tall_each_marker[[input$early.vs.late.marker]], confidence_intervals_each_marker[[input$early.vs.late.marker]], phenotypic_markers[[input$early.vs.late.marker]], input$above.or.below.NC)
     
   })
   

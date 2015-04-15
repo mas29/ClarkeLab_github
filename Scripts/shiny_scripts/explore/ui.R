@@ -1,16 +1,6 @@
 # Have to put video in the www folder of this shiny app
 
-# Get list of compounds
-compounds <- as.character(sort(unique(data_wide$Compound)))
-compound_list <- as.list(setNames(compounds, compounds))
-
-# Get list of targets
-targets <- as.character(sort(unique(data_wide$Target.class..11Mar15.)))
-target_list <- as.list(setNames(targets, targets))
-
-# Get list of pathways
-pathways <- as.character(sort(unique(data_wide$Pathway)))
-pathway_list <- as.list(setNames(pathways, pathways))
+source("lists.R")
 
 # Define UI
 shinyUI(navbarPage("Perspective:",
@@ -129,6 +119,64 @@ shinyUI(navbarPage("Perspective:",
                               
                               mainPanel(plotOutput("QC.by.plate"))
                             )
+                   ),
+                   tabPanel("Curve Metrics",
+                            
+                            # Application title
+                            titlePanel("QQ Plots and Density Plots of Curve Metrics"),
+                            
+                            # Layout
+                            sidebarLayout(
+                              
+                              sidebarPanel(
+                                radioButtons("metric.marker", "Phenotypic Marker:", phenotypic_marker_names),
+                                radioButtons("metric", "Metric:", metric_names)
+                              )
+                              ,
+                              
+                              mainPanel(
+                                tabsetPanel(
+                                  tabPanel("QQ Plot", plotOutput("qq.plot.one.metric")),
+                                  tabPanel("Density Plot", plotOutput("density.plot.one.metric"))
+                                )
+                              )
+                            )
+                   ),
+                   #### !!!!!!!! STILL HAVE TO DO UNDER NEGATIVE CONTROL
+                   tabPanel("Timing",
+                            
+                            # Application title
+                            titlePanel("Early- vs Late-Acting Compounds"),
+                            
+                            # Layout
+                            sidebarLayout(
+                              
+                              sidebarPanel(
+                                radioButtons("early.vs.late.marker", "Phenotypic Marker:", phenotypic_marker_names),
+                                radioButtons("above.or.below.NC", "With respect to negative control confidence interval:", above_or_below_list)
+                              )
+                              ,
+                              
+                              mainPanel(plotOutput("early.vs.late.acting"))
+                            )
                    )
+                   # TAKES SO LONG!!!!!
+#                    ,
+#                    tabPanel("Overview",
+#                             
+#                             # Application title
+#                             titlePanel("All Sparklines"),
+#                             
+#                             # Layout
+#                             sidebarLayout(
+#                               
+#                               sidebarPanel(
+#                                 radioButtons("overview.marker", "Phenotypic Marker:", phenotypic_marker_names)
+#                               ),
+#                               
+#                               mainPanel(h6("Note: Background to each plot is coloured by the delta (max-min) value."),
+#                                         plotOutput("QC.by.plate"))
+#                             )
+#                    )
 ))
 

@@ -209,8 +209,8 @@ combine<-function(){
 
 # Create reconfigured data, write to file
 data_reconfigured <- combine()
-dir.create(file.path(dir, "Output"), showWarnings = FALSE)
-write.csv(data_reconfigured,file = paste(dir, "Output/data_reconfigured.csv", sep=""))
+dir.create(file.path("Output"), showWarnings = FALSE)
+write.csv(data_reconfigured,file = "Output/data_reconfigured.csv")
 
 
 

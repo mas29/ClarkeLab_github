@@ -1,5 +1,3 @@
-
-
 # Function to plot QC of each plate for phenotypic marker of interest
 # param df -- data in tall format for particular phenotypic marker
 # param phenotypic_marker_name -- phenotypic marker of interest

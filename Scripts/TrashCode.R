@@ -1644,3 +1644,26 @@ getPlatePositions<-function(){
   return(finalPositions)	
 }
 
+
+#     ggtitle(paste("QQ Plot\nPhenotypic Marker: ",phenotypic_marker_name,"\nCurve Metric: ", metric_name, sep="")) +
+#     ggtitle(paste("Density Plot\nPhenotypic Marker: ",phenotypic_marker_name,"\nCurve Metric: ", metric_name, sep="")) +
+
+
+
+#!!!!!! SET WORKING DIRECTORY....... :-( (top level folder for this application)
+dir <- "/Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/"
+
+# Reconfigure the data 
+source(paste(dir,"Scripts/Reconfigure_ms_edits.R",sep=""))
+
+# Reformat the data
+source(paste(dir,"Scripts/GetData.R",sep=""))
+
+source(paste(dir, "Scripts/GetData.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_compound.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_target.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_pathway.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_QC.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_QQ_density_plots.R", sep=""))
+source(paste(dir, "Scripts/shiny_scripts/explore/explore_early_vs_late_acting.R", sep=""))
+source(paste(dir, "Scripts/GetImagesForCompound.R", sep=""))

@@ -5,6 +5,62 @@ library(plotly)
 ############# ------------------- Change the following configurations -------------------- #############
 ########################################################################################################
 
+get_config_from_user <- function(){
+  archive_dir <- readline("Path to your archive's ScanData folder (e.g. /Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/):")  
+  
+  key_filename <- readline("Path to the custom compound key for your experiment (e.g. /Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/1833Key.xlsx):")
+  
+  selleck_info_filename <- readline("Path to the Selleck compound key (e.g. /Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/Selleck_1833_LibraryAnnotation_Mar15.xlsx):")
+  
+  raw_data_filename <- readline("Path to IncuCyte data Excel file (all in one excel document, different plates and markers on different sheets) (e.g. /Users/maiasmith/Documents/SFU/ClarkeLab/ClarkeLab_github/Files/C2C12_diff_Tunicamycin_Reconfigure.xlsx):")
+  
+  phenotypic_marker_names <- readline("Names (human-readable) of phenotypic markers used in experiment, separated by commas, in the order that they appear in the IncuCyte data Excel file (e.g. Confluency, Sytox Green):")
+  phenotypic_marker_names <- unlist(strsplit(phenotypic_marker_names, ", "))
+  
+  phenotypic_markers <- readline("Names of phenotypic markers used in experiment, separated by commas, exactly as they appear in the IncuCyte data Excel file (e.g. Con, SG):")
+  phenotypic_markers <- unlist(strsplit(phenotypic_markers, ", "))
+  
+  image_type_names <- readline("Types of images (human-readable) output by IncuCyte (e.g. Phase-Contrast, Green Fluorescence):")
+  image_type_names <- unlist(strsplit(image_type_names, ", "))
+  
+  image_types <- readline("Types of images output by IncuCyte machine, as they appear in the archive image files (if filename is \"A1-1-C.tif\", it's \"C\") (e.g. P, C1):")
+  image_types <- unlist(strsplit(image_types, ", "))
+  
+  num_plates <- readline("Number of plates in the screen (e.g. 5):")
+  num_plates <- as.numeric(num_plates)
+  
+  num_wells_per_plate <- readline("Number of wells per plate (e.g. 384):")
+  num_wells_per_plate <- as.numeric(num_wells_per_plate)
+  
+  num_letters <- readline("Number of \"letters\" in the screen (e.g. A1, B1, C1 ... if goes up to letter P, would be 16 letters) (e.g. 16):")
+  num_letters <- as.numeric(num_letters)
+  
+  # Number of "numbers" for the screen (e.g. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers) (as integer)
+  num_numbers <- readline("Number of \"numbers\" for the screen (e.g. A1, B1, C1 ... A2, B2, C2 ... if goes up to A24, would be 24 numbers) (e.g. 24):") 
+  num_numbers <- as.numeric(num_numbers)
+  
+  # The name of your IncuCyte screen
+  # e.g. "C2C12 Diff Tunicamycin"
+  screen_name <- readline("The name of your IncuCyte screen (whatever you wish it to be) (e.g. C2C12 Diff Tunicamycin):") 
+  
+  # Value for the NA wells (IncuCyte didn't detect a value for a particular phenotypic marker)
+  # e.g. 0.2320489
+  na_value <- readline("Value for the NA wells, where IncuCyte didn't detect a value for a particular phenotypic marker (e.g. 0.2320489):")
+  na_value <- as.numeric(na_value)
+  
+  configs <- list(archive_dir, key_filename, selleck_info_filename, raw_data_filename, phenotypic_marker_names, phenotypic_markers, image_type_names, image_types, num_plates, num_wells_per_plate, num_letters, num_numbers, screen_name, na_value)
+  names <- c("archive_dir", "key_filename", "selleck_info_filename", "raw_data_filename", "phenotypic_marker_names", "phenotypic_markers", "image_type_names", "image_types", "num_plates", "num_wells_per_plate", "num_letters", "num_numbers", "screen_name", "na_value")
+  configs <- setNames(configs, names)
+  
+  return(configs)
+  
+}
+
+configs <- get_config_from_user()
+archive_dir, key_filename, selleck_info_filename, raw_data_filename, phenotypic_marker_names, phenotypic_markers, image_type_names, image_types, num_plates, num_wells_per_plate, num_letters, num_numbers, screen_name, na_value
+
+#################################################################
+
 # Directory of the archive for the IncuCyte images (point to EssenFiles/ScanData/ directory)
 # e.g. "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/" 
 archive_dir <- "/Volumes/G-Drive/dc140908\ c2c12\ diff\ tun\ 1-5/EssenFiles/ScanData/" 
