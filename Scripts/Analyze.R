@@ -66,6 +66,12 @@ library(shiny)
 # knitr::knit2html("RMarkdowns/AllSparklines.Rmd")
 # browseURL("RMarkdowns/AllSparklines.html")
 
+# Save objects
+save(data_wide, file = "Output/data_wide.R")
+save(data_tall_each_marker, file = "Output/data_tall_each_marker.R")
+save(confidence_intervals_each_marker, file = "Output/confidence_intervals_each_marker.R")
+save(data_reconfigured, file = "Output/data_reconfigured.R")
+
 # Explore individual compounds
 runApp("Scripts/shiny_scripts/explore", launch.browser = TRUE)
 
